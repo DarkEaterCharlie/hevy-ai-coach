@@ -1,0 +1,10 @@
+[FORMÁT VÝSTUPU A STRUKTURA]
+- Vrať striktní JSON odpovídající definovanému schématu. [cite: 18]
+- exercise_template_id musí přesně odpovídat kosterám plánu. [cite: 20, 33]
+- Všechny číselné hodnoty musí být čísla (number), ne stringy. [cite: 25, 26]
+- Cvik s vlastní vahou = 0 kg. [cite: 35]
+
+[LOGIKA SÉRIÍ - ZÁKAZ MAZÁNÍ WARMUPŮ]
+- Všechny warmup sety (type: warmup) definované v KOSTŘE PLÁNU musí zůstat ve výstupu zachovány; nikdy je neodstraňuj.
+- U pracovních sérií (type: normal): Pokud KOSTRA (Hevy šablona) obsahuje více slotů, než dovolují bezpečnostní limity CNS (3-4 série pro těžké cviky), nadbytečné prázdné sloty ignoruj a do výstupu je nedávej.
+- Výsledné pole 'sets' musí obsahovat přesný a reálný počet sérií, které má atlet v daném tréninku odjet.
