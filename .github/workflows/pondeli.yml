@@ -1,0 +1,28 @@
+name: Pondělní Tréninkový Start
+on:
+  workflow_dispatch: # Tlačítko pro spuštění z iPhonu
+
+jobs:
+  run-coach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout kódu
+        uses: actions/checkout@v4
+
+      - name: Instalace Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalace závislostí
+        run: npm install
+
+      - name: Spuštění Trenéra
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HEVY_API_KEY: ${{ secrets.HEVY_API_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: |
+          echo "$GOOGLE_CREDENTIALS_JSON" > google-credentials.json
+          echo "ano" | node coach.js
