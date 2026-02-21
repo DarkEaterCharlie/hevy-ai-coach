@@ -1,0 +1,55 @@
+1. Struktura Projektu (Architektura v2.0)
+
+Systém je rozdělený tak, aby každá část dělala jen jednu věc, ale pořádně:
+
+coach.js (Root): Hlavní orchestrátor. Řídí sběr dat, generování a spouští interaktivní upload.
++1
+
+/services/aiService.js: Mozek trenéra. Skládá prompty ze složky /prompts a komunikuje s Gemini API.
++1
+
+/services/hevyService.js: Konektor pro Hevy API (stahování rutin, historie a nahrávání změn).
+
+NOVÉ: /services/storageService.js: Nahradil starou správu Google Tabulky. Nyní čte tvůj profil, maxima a posouvá týdny čistě z lokálního disku (config/user_db.json).
+
+NOVÉ: runDiscovery.js & Discovery moduly: Úplně nový mozek pro cviky. Spouštěč diriguje stahování z Hevy, nachází novinky přes comparisonService.js a inteligentně je analyzuje pomocí discoveryService.js.
+
+writer.js & uploader.js (Root): Transformátor dat, který čistí složku /exports a připravuje JSONy pro upload. Navíc obsahuje "pojistku" proti smazaným warmupům. Uploader následně bere soubory z /exports a "střílí" je do Hevy Cloudu.
++1
+
+/prompts/: Složka s modulárními pravidly (role.txt, safety.txt, components.txt, output.txt a nově discovery.txt a progression.txt).
+
+🧠 2. Trenérská Logika a Ochrany
+
+Pravidla pro AI jsou nastavena tak, aby tě nezničila a respektovala tvé limity:
+
+Rest Management: Povinné pauzy 120-180s u hlavních cviků, i kdyby v šabloně bylo méně.
+
+Nezrušitelné prvky: Kardio intervaly a střed těla (Core) nesmí Gemini z plánu vyhodit.
+
+Autoregulace: Výpočet vah na základě E-1RM z historie a aktuálních 1RM z tabulky.
+
+NOVÉ: Inteligentní Progrese: Díky souboru smart_catalog.json bot ví, kdy u cviku (např. shybů) překročíš cílový počet opakování a automaticky tě přepne na těžší variantu (např. se zátěží).
+
+💾 3. Datový Tok (Data Flow pro v2.0)
+
+Takhle přesně putují data, když klikneš na mobilu:
+
+Sběr: coach.js už nepotřebuje Google API. Bleskově načte tvůj profil a maxima z lokálního disku a historii s rutiny si vytáhne z Hevy.
+
+Generování: Gemini vytvoří plán podle pravidel v /prompts. RPE se zapisuje do poznámek (notes).
++1
+
+Automatizace: Díky příkazu echo "ano" | v GitHub Actions se tento krok potvrdí sám. Po potvrzení "ano" pošle uploader.js data do mobilu a lokální databáze (dříve sheetsService.js) posune tréninkový týden.
++1
+
+🛠️ 4. Vyřešené Bugy a Vylepšení (v2.0)
+
+Tohle už máme za sebou a systém je proti tomu imunní:
+
+Mazání Warmupů: Gemini už nesmí mazat tvoje manuálně zadané rozcvičovací série. Kdyby se o to pokusilo, writer.js je tam natvrdo vrátí.
++1
+
+Odstranění Cloudové Závislosti: Zcela jsme eliminovali Google Sheets API. Žádné limity čtení, žádné vypršené tokeny. Vše leží bezpečně ve složce config/.
+
+Úspora AI Tokenů: Modul comparisonService.js zajišťuje, že Gemini analyzuje pouze nově přidané cviky z Hevy, čímž šetříme čas i API kvóty.

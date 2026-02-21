@@ -2,16 +2,14 @@ const { GoogleGenerativeAI, SchemaType } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 
-// --- TADY JE TA FUNKCE PRO NAČÍTÁNÍ PROMPTŮ ---
-// services/aiService.js
+// Pomocník pro načítání promptů
 const loadPrompt = (fileName) => {
     try {
-        // Přidali jsme '..', abychom se dostali ze složky services do rootu k prompts
         const filePath = path.join(__dirname, '..', 'prompts', fileName);
         return fs.readFileSync(filePath, 'utf8');
     } catch (err) {
-        console.error(`❌ Nelze načíst soubor: prompts/${fileName}.`);
-        throw err;
+        console.warn(`⚠️ Varování: Soubor prompts/${fileName} nenalezen, pokračuji bez něj.`);
+        return "";
     }
 };
 
@@ -40,7 +38,7 @@ const responseSchema = {
                                     items: {
                                         type: SchemaType.OBJECT,
                                         properties: {
-                                            type: { type: SchemaType.STRING }, // "warmup" / "normal"
+                                            type: { type: SchemaType.STRING },
                                             weight_kg: { type: SchemaType.NUMBER },
                                             reps: { type: SchemaType.NUMBER },
                                             rpe: { type: SchemaType.NUMBER }
@@ -61,48 +59,63 @@ const responseSchema = {
 };
 
 async function generateTrainingPlan(data) {
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error("Missing GEMINI_API_KEY environment variable");
+    // 1. OPRAVA: Název klíče musí odpovídat tvému .env (GOOGLE_GENAI_API_KEY)
+    const apiKey = process.env.GOOGLE_GENAI_API_KEY;
+    if (!apiKey) {
+        throw new Error("❌ Missing GOOGLE_GENAI_API_KEY in .env file");
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // 2. OPRAVA: Model (použijeme aktuální flash, je bleskový a chytrý)
     const model = genAI.getGenerativeModel({
         model: "gemini-2.5-pro",
-        generationConfig: { responseMimeType: "application/json", responseSchema, temperature: 0.1 }
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema,
+            temperature: 0.2 // Trošku víc kreativity pro 'zpravu_od_kouce'
+        }
     });
 
-    // Sestavení promptu z externích souborů
+    // 3. SESTAVENÍ PROMPTU (Mapování na tvou novou DB strukturu)
     const prompt = `
         ${loadPrompt('role.txt')}
+        
+      [STRATEGIE CYKLU - TÝDEN ${data.currentWeek || '1'}/12]
+              - Fáze: ${data.periodization?.phase || 'Stabilizace'}
+              - Intenzita: ${data.periodization?.intensity || 'Střední'}
+              - Cílové RPE: ${data.periodization?.rpeTarget || 8}
+              - Procento z 1RM: ${((data.periodization?.volumeWeight || 0.75) * 100).toFixed(0)}%
+              - Poznámka k týdnu: ${data.periodization?.note || 'Standardní progres'}
 
         [PROFIL ATLETA]
-        - Věk/Pohlaví: ${data.age}/${data.gender}
-        - Váha: ${data.bodyweight} kg
+        - Věk: ${data.age} let
+        - Pohlaví: ${data.gender}
+        - Aktuální váha: ${data.bodyweight} kg
         - Ostatní sporty: ${data.otherSports}
-        - Zranění: ${data.injuries}
+        - Zranění/Omezení: ${data.injuries}
+        - Aktuální zaměření: ${data.currentPhase}
 
-        [KONTEXT CYKLU]
-        - Fáze: ${data.phase}
-        - Pravidla týdne: ${data.rules}
-        - Maxima: ${JSON.stringify(data.maxima)}
+        [SILOVÁ DATA (1RM)]
+        ${JSON.stringify(data.user1RM)}
 
         ${loadPrompt('safety.txt')}
         ${loadPrompt('components.txt')}
 
-        [TVÁ PRACOVNÍ PLOCHA]
-        - KOSTRA: ${JSON.stringify(data.routines)}
-        - HISTORIE: ${JSON.stringify(data.history)}
+        [TVÁ PRACOVNÍ PLOCHA - ŠABLONY]
+        ${JSON.stringify(data.routines)}
+
+        [HISTORIE POSLEDNÍCH TRÉNINKŮ]
+        ${JSON.stringify(data.history)}
 
         ${loadPrompt('output.txt')}
     `;
 
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text();
-    
     try {
-        return JSON.parse(raw);
+        const result = await model.generateContent(prompt);
+        return JSON.parse(result.response.text());
     } catch (e) {
-        console.error("JSON parse failed. Raw response:", raw);
+        console.error("❌ Kritická chyba AI generování:", e);
         throw e;
     }
 }

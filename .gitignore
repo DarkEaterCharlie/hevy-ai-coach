@@ -2,3 +2,6 @@ node_modules/
 .env
 google-credentials.json
 exports/
+Update
+config/user_db.json
+config/smart_catalog.json

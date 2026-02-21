@@ -1,4 +1,4 @@
- [
+[
   {
     "id": "3BC06AD3",
     "title": "21s Bicep Curl",
@@ -166,6 +166,19 @@
     "primary_muscle_group": "shoulders",
     "secondary_muscle_groups": [],
     "equipment": "machine",
+    "is_custom": true
+  },
+  {
+    "id": "a668f6d3-7938-4f2c-8c41-5bd43f5c91b2",
+    "title": "balance board",
+    "type": "duration",
+    "primary_muscle_group": "adductors",
+    "secondary_muscle_groups": [
+      "calves",
+      "lower_back",
+      "abdominals"
+    ],
+    "equipment": "other",
     "is_custom": true
   },
   {
@@ -3925,6 +3938,18 @@
     "is_custom": false
   },
   {
+    "id": "3e5921f6-303c-4a9a-ae77-842d7191a69c",
+    "title": "Ring Dips",
+    "type": "reps_only",
+    "primary_muscle_group": "chest",
+    "secondary_muscle_groups": [
+      "forearms",
+      "triceps"
+    ],
+    "equipment": "suspension",
+    "is_custom": true
+  },
+  {
     "id": "51A0EDAA",
     "title": "Ring Dips",
     "type": "reps_only",
@@ -3937,15 +3962,15 @@
     "is_custom": false
   },
   {
-    "id": "3e5921f6-303c-4a9a-ae77-842d7191a69c",
-    "title": "Ring Dips",
-    "type": "reps_only",
+    "id": "7b0823fd-f0c0-4bee-a527-0482ae74a782",
+    "title": "Ring dips weighted",
+    "type": "bodyweight_weighted",
     "primary_muscle_group": "chest",
     "secondary_muscle_groups": [
       "forearms",
       "triceps"
     ],
-    "equipment": "suspension",
+    "equipment": "other",
     "is_custom": true
   },
   {

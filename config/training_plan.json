@@ -1,0 +1,17 @@
+{
+  "planName": "12-Week Power & Hypertrophy (Variant C)",
+  "weeks": {
+    "1": { "phase": "Accumulation", "intensity": "Low", "rpeTarget": 7, "volumeWeight": 0.70 },
+    "2": { "phase": "Accumulation", "intensity": "Medium", "rpeTarget": 7.5, "volumeWeight": 0.73 },
+    "3": { "phase": "Accumulation", "intensity": "High", "rpeTarget": 8, "volumeWeight": 0.75 },
+    "4": { "phase": "Deload", "intensity": "Very Low", "rpeTarget": 5, "volumeWeight": 0.50, "note": "Focus on technique, cut sets by 1" },
+    "5": { "phase": "Intensification", "intensity": "Medium", "rpeTarget": 8, "volumeWeight": 0.78 },
+    "6": { "phase": "Intensification", "intensity": "High", "rpeTarget": 8.5, "volumeWeight": 0.82 },
+    "7": { "phase": "Intensification", "intensity": "Very High", "rpeTarget": 9, "volumeWeight": 0.85 },
+    "8": { "phase": "Deload", "intensity": "Very Low", "rpeTarget": 5, "volumeWeight": 0.50 },
+    "9": { "phase": "Peaking", "intensity": "High", "rpeTarget": 9, "volumeWeight": 0.88 },
+    "10": { "phase": "Peaking", "intensity": "Very High", "rpeTarget": 9.5, "volumeWeight": 0.92 },
+    "11": { "phase": "Max Effort", "intensity": "Extreme", "rpeTarget": 10, "volumeWeight": 0.95 },
+    "12": { "phase": "Full Recovery", "intensity": "Minimal", "rpeTarget": 4, "volumeWeight": 0.40, "note": "Active recovery only, no heavy lifting" }
+  }
+}

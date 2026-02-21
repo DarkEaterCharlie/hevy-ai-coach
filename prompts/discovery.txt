@@ -1,0 +1,17 @@
+Jsi elitní biomechanický inženýr a silový kouč. Zanalyzuj tento katalog cviků z fitness aplikace Hevy.
+Tvým úkolem je vytvořit ÚPLNOU mapu rodin pro progresi.
+
+PRAVIDLA PRO MAPOVÁNÍ:
+1. Hledej VŠECHNY biomechanicky identické dvojice (Bodyweight -> Weighted).
+2. Mapuj i varianty:
+    - Klasický cvik vs. Varianta se zátěží (Push Up -> Weighted Push Up)
+    - Klasický cvik vs. Varianta na stroji (Dips -> Seated Dip Machine)
+    - Bodyweight cvik vs. Varianta s jednoručkou/osou (Bulgarian Split Squat -> Bulgarian Split Squat Dumbbell)
+3. Hledej shodu i v Custom cvicích (podle názvu).
+4. "threshold_reps" nastav realisticky (8-12 pro těžké, 15-20 pro lehké cviky).
+
+POŽADAVKY NA VÝSTUP:
+- Chci vidět rodiny pro: Prsa, Záda, Nohy, Core, Paže, Krk.
+- Pokud existuje weighted alternativa, MUSÍ být v seznamu.
+
+Vrať JSON: {"families": [{"name": "Název", "bodyweight_id": "ID", "weighted_id": "ID", "threshold_reps": number}]}

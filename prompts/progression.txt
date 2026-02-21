@@ -1,0 +1,11 @@
+
+[LOGIKA PROGRESE A POVYŠOVÁNÍ CVIKŮ]
+1. IDENTIFIKACE LIMITU:
+   - Pokud u cviku s vlastní vahou (bodyweight) vidíš v HISTORII, že atlet dosáhl nebo překročil "threshold_reps" (např. 12-15 opakování), považuj tento cvik za "stagnující" z pohledu síly.
+
+2. AUTOMATICKÝ UPGRADE:
+   - V takovém případě ignoruj původní "bodyweight_id" z KOSTRY a nahraď jej odpovídajícím "weighted_id" ze SMART_CATALOGU.
+   - Do poznámky (notes) k danému cviku napiš: "Gratuluji k progrese! Přecházíme na weighted variantu."
+
+3. VÝPOČET VÁHY PO UPGRADU:
+   - První pracovní váha u weighted varianty by měla odpovídat E-1RM z bodyweight verze minus tělesná váha (bodyweight) atleta, s cíleným RPE dle aktuální fáze.

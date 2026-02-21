@@ -1,18 +1,23 @@
 require('dotenv').config();
-const { getSheetsData, incrementWeek } = require('./services/sheetsService'); // Změněno [cite: 1, 5]
-const { getFolderRoutines, getLastWorkouts } = require('./services/hevyService'); // Změněno [cite: 1, 4]
-const { generateTrainingPlan } = require('./services/aiService'); // Změněno [cite: 1, 3]
+//const { getSheetsData, incrementWeek } = require('./services/sheetsService');
+const { getLocalData, incrementLocalWeek } = require('./services/storageService');
+const { getFolderRoutines, getLastWorkouts } = require('./services/hevyService');
+const { generateTrainingPlan } = require('./services/aiService');
 const { exportPlanToHevyFiles } = require('./writer');
-const { syncExportsToHevy } = require('./uploader'); // Nový mikroservis pro Hevy
+const { syncExportsToHevy } = require('./uploader');
+const { runOnboarding } = require('./utils/onboarding'); // 👈 TADY JE TEN CHYBĚJÍCÍ IMPORT
 const readline = require('readline');
 
 async function runModularCoach() {
     console.log("🤖 START: Probouzím modulárního AI Trenéra...\n");
 
     try {
+        // 0. ONBOARDING: Zkontroluje/vytvoří databázi a vytěží maximálky
+        await runOnboarding(); // 👈 TADY ZASTAVÍME BĚH A VYTVOŘÍME SOUBOR
         // 1. Sběr dat
         console.log("📊 [Modul: Sheets] Čtu Google Tabulku...");
-        const sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
+       // const sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
+        const sheetsData = await getLocalData();
         
         console.log("📜 [Modul: Hevy] Analyzuji tvou nedávnou historii...");
         const history = await getLastWorkouts(process.env.HEVY_API_KEY, 5);
@@ -23,6 +28,8 @@ async function runModularCoach() {
         // 2. Generování plánu
         console.log("🧠 [Modul: AI] Generuji tréninkový plán...");
         const plan = await generateTrainingPlan({
+            currentWeek: sheetsData.currentWeek,
+            periodization: sheetsData.periodization,
             phase: sheetsData.currentPhase,
             rules: sheetsData.currentRules,
             maxima: sheetsData.user1RM,
@@ -51,10 +58,11 @@ async function runModularCoach() {
                 console.log("\n🚀 Startuji nahrávání...");
                 
                 // Spuštění mikroservisu pro Hevy
-                await syncExportsToHevy(process.env.HEVY_API_KEY);
+             //   await syncExportsToHevy(process.env.HEVY_API_KEY);
                 
                 // Posun týdne v tabulce
-                await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
+                //await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
+                //await incrementLocalWeek(sheetsData.currentWeek);
                 
                 console.log("✅ Všechno je v mobilu i v tabulce.");
             } else {
