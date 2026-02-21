@@ -26,22 +26,36 @@ async function runModularCoach() {
         const routines = await getFolderRoutines(process.env.HEVY_API_KEY, sheetsData.targetFolderId);
 
         // 2. Generování plánu
-        console.log("🧠 [Modul: AI] Generuji tréninkový plán...");
-        const plan = await generateTrainingPlan({
-            currentWeek: sheetsData.currentWeek,
-            periodization: sheetsData.periodization,
-            phase: sheetsData.currentPhase,
-            rules: sheetsData.currentRules,
-            maxima: sheetsData.user1RM,
-            history: history,
-            routines: routines,
-            bodyweight: sheetsData.bodyweight,
-            age: sheetsData.age,
-            gender: sheetsData.gender,
-            otherSports: sheetsData.otherSports,
-            injuries: sheetsData.injuries
-        });
+                console.log("🛠️ [Modul: Transformace] Injektuji 1RM přímo do šablon...");
+                
+                // Vytvoříme novou strukturu rutin, kde ke každému cviku přilepíme jeho 1RM z databáze
+                const routinesWith1RM = routines.map(rutina => ({
+                    nazev_rutiny: rutina.nazev_rutiny,
+                    id_rutiny: rutina.id_rutiny,
+                    cviky: rutina.cviky.map(cvik => ({
+                        nazev: cvik.nazev,
+                        hevy_id: cvik.hevy_id,
+                        pocet_predepsanych_serii: cvik.pocet_predepsanych_serii,
+                        pocet_warmup_serii: cvik.pocet_warmup_serii,
+                        aktualni_1RM_kg: sheetsData.user1RM[cvik.hevy_id] || 0 // Tohle AIčkem konečně trkne!
+                    }))
+                }));
 
+                console.log("🧠 [Modul: AI] Generuji tréninkový plán...");
+                const plan = await generateTrainingPlan({
+                    currentWeek: sheetsData.currentWeek,
+                    periodization: sheetsData.periodization,
+                    phase: sheetsData.currentPhase,
+                    rules: sheetsData.currentRules,
+                    history: history,
+                    routines: routinesWith1RM, // 👈 Podstrčíme ty obohacené rutiny
+                    bodyweight: sheetsData.bodyweight,
+                    age: sheetsData.age,
+                    gender: sheetsData.gender,
+                    otherSports: sheetsData.otherSports,
+                    injuries: sheetsData.injuries
+                    // maxima: sheetsData.user1RM  <-- TOHLE JSEM SMAZAL, UŽ TO TAM NEPOTŘEBUJEME
+                });
         // 3. Lokální transformace a výpis (příprava souborů v /exports)
         await exportPlanToHevyFiles(plan, routines);
         printPlanLocally(plan);

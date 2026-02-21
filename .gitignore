@@ -5,3 +5,4 @@ exports/
 Update
 config/user_db.json
 config/smart_catalog.json
+.DS_Store

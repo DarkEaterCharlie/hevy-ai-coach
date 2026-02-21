@@ -96,8 +96,6 @@ async function generateTrainingPlan(data) {
         - Zranění/Omezení: ${data.injuries}
         - Aktuální zaměření: ${data.currentPhase}
 
-        [SILOVÁ DATA (1RM)]
-        ${JSON.stringify(data.user1RM)}
 
         ${loadPrompt('safety.txt')}
         ${loadPrompt('components.txt')}
