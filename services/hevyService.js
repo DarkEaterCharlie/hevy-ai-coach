@@ -86,7 +86,7 @@ async function getLastWorkouts(apiKey, count = 5) {
 
         return workouts.map(w => ({
             nazev: w.title,
-            datum: new Date(w.start_time).toLocaleDateString('cs-CZ'),
+            datum: new Date(w.start_time).toLocaleDateString('cs-CZ'),timestamp: new Date(w.start_time).getTime(), // <--- PŘIDÁNO PRO FILTR
             cviky: w.exercises.map(ex => ({
                 nazev: ex.title,
                 serie: ex.sets.map(s => `${s.weight_kg}kg x ${s.reps} (RPE ${s.rpe || '?'})`)

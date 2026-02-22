@@ -1,7 +1,7 @@
 [FORMÁT VÝSTUPU A STRUKTURA]
 - Vrať striktní JSON odpovídající definovanému schématu. [cite: 18]
-- exercise_template_id musí přesně odpovídat kosterám plánu. [cite: 20, 33]
-- Všechny číselné hodnoty musí být čísla (number), ne stringy. [cite: 25, 26]
+- exercise_template_id musí přesně odpovídat kosterám plánu.
+  VÝJIMKA: Pokud jsi cvik upgradoval podle SMART CATALOGU, je POVINNÉ použít nové 'weighted_id'. To je žádoucí chování!- Všechny číselné hodnoty musí být čísla (number), ne stringy. [cite: 25, 26]
 - Cvik s vlastní vahou = 0 kg. [cite: 35]
 
 [LOGIKA SÉRIÍ - ZÁKAZ MAZÁNÍ WARMUPŮ]

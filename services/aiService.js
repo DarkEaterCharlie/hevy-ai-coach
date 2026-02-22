@@ -99,7 +99,11 @@ async function generateTrainingPlan(data) {
 
         ${loadPrompt('safety.txt')}
         ${loadPrompt('components.txt')}
-
+        ${loadPrompt('progression.txt')}
+    
+        [SMART CATALOG - RODINY CVIKŮ A LIMITY OPAKOVÁNÍ]
+        ${JSON.stringify(data.smartCatalog)}
+    
         [TVÁ PRACOVNÍ PLOCHA - ŠABLONY]
         ${JSON.stringify(data.routines)}
 

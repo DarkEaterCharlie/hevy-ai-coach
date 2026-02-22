@@ -24,9 +24,34 @@ async function runModularCoach() {
         // Získáme pravidla pro aktuální týden (pokud neexistuje, fallback na týden 1)
         const periodization = trainingPlan.weeks[String(sheetsData.currentWeek)] || trainingPlan.weeks["1"];
 
-        console.log("📜 [Modul: Hevy] Analyzuji tvou nedávnou historii...");
-        const history = await getLastWorkouts(process.env.HEVY_API_KEY, 5);
+        // ---> TADY JE PŘIDANÝ SMART CATALOG <---
+        console.log("📖 [Modul: Storage] Čtu Smart Catalog (progresi cviků)...");
+        const catalogPath = path.join(__dirname, './config/smart_catalog.json');
+        let smartCatalog = [];
+        if (fs.existsSync(catalogPath)) {
+            smartCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+        }
+        // ----------------------------------------
 
+        console.log("📜 [Modul: Hevy] Analyzuji tvou nedávnou historii...");
+                const rawHistory = await getLastWorkouts(process.env.HEVY_API_KEY, 10); // Necháme těch 10, ať máme data i z doby před deloadem
+
+                // --- 🚦 VÝHYBKA PRO DELOAD ---
+                let history = rawHistory;
+                const prevWeek = sheetsData.currentWeek - 1;
+                
+                // Pokud nejsme v prvním týdnu, zkontrolujeme, jaký byl ten minulý
+                if (prevWeek > 0 && trainingPlan.weeks[String(prevWeek)]) {
+                    const prevPhase = trainingPlan.weeks[String(prevWeek)].phase;
+                    
+                    if (prevPhase.toLowerCase().includes('deload')) {
+                        console.log("⚠️ [Výhybka] Minulý týden byl DELOAD. Mažu posledních 7 dní z paměti pro AI...");
+                        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                        
+                        // Pustíme do AI jen tréninky starší než 7 dní (ty tvrdé před deloadem)
+                        history = rawHistory.filter(w => w.timestamp < sevenDaysAgo);
+                    }
+                }
         console.log(`🏋️ [Modul: Hevy] Stahuji šablony rutiny ze složky: ${sheetsData.targetFolderId}...`);
         const routines = await getFolderRoutines(process.env.HEVY_API_KEY, sheetsData.targetFolderId);
 
@@ -58,7 +83,8 @@ async function runModularCoach() {
             age: sheetsData.age,
             gender: sheetsData.gender,
             otherSports: sheetsData.otherSports,
-            injuries: sheetsData.injuries
+            injuries: sheetsData.injuries,
+            smartCatalog: smartCatalog // <--- TADY SE TO POSÍLÁ DO AI
         });
 
         // 5. Lokální uložení a výpis
@@ -95,9 +121,6 @@ async function runModularCoach() {
         if (error.stack) console.error(error.stack);
     }
 }
-
-// Sem pokračuje tvoje funkce printPlanLocally(plan) { ... }
-// nezapomeň ji tam nechat, a pak runModularCoach() úplně dole!
 
 function printPlanLocally(plan) {
     if (!plan || !plan.tydenni_plan) {

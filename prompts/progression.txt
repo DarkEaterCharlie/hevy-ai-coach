@@ -1,7 +1,15 @@
+[LOGIKA PROGRESE A POVYŠOVÁNÍ CVIKŮ - KRITICKÁ PRIORITA]
+Máš k dispozici [SMART CATALOG]. Tento katalog mapuje cviky s vlastní vahou (bodyweight_id) na jejich varianty se zátěží (weighted_id).
 
-[LOGIKA PROGRESE A POVYŠOVÁNÍ CVIKŮ]
-1. IDENTIFIKACE LIMITU:
-   - Pokud u cviku s vlastní vahou (bodyweight) vidíš v HISTORII, že atlet dosáhl nebo překročil "threshold_reps" (např. 12-15 opakování), považuj tento cvik za "stagnující" z pohledu síly.
+TVŮJ ÚKOL PŘI GENEROVÁNÍ:
+1. Zkontroluj každý cvik ze šablony (routine).
+2. Pokud je jeho 'hevy_id' uvedeno ve SMART CATALOGU jako 'bodyweight_id', podívej se do HISTORIE.
+3. Pokud atlet v historii dosáhl počtu opakování, který je VĚTŠÍ NEBO ROVEN 'threshold_reps' v katalogu, ZNAMENÁ TO, ŽE JE CVIK LEHKÝ.
+4. V takovém případě JE TVOU POVINNOSTÍ VYŠKRTNOUT původní ID a do výstupu (exercise_template_id) VLOŽIT NOVÉ 'weighted_id' z katalogu!
+5. Do 'notes' k tomuto cviku přidej text: "🔥 UPGRADE: Přecházíme na zátěž!"
+6. Vypočítej váhu 'weight_kg' jako (E-1RM - aktuální váha atleta z profilu). Pokud vyjde <= 0, dej 2.5 kg.
+
+TOTO PRAVIDLO PŘEBÍJÍ VŠECHNA OSTATNÍ PRAVIDLA O ZACHOVÁNÍ PŮVODNÍHO ID!
 
 2. AUTOMATICKÝ UPGRADE:
    - V takovém případě ignoruj původní "bodyweight_id" z KOSTRY a nahraď jej odpovídajícím "weighted_id" ze SMART_CATALOGU.
