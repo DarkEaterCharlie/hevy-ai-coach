@@ -8,7 +8,7 @@ async function getSheetsData(spreadsheetId) {
     });
     const sheets = google.sheets({ version: 'v4', auth: await auth.getClient() });
 
-    // 1. Čtení Configu (Rozšířeno pro profil atleta)
+    // 1. Čtení Configu (S ošetřením prázdných buněk)
     const configData = await sheets.spreadsheets.values.get({ spreadsheetId, range: 'Config!A2:B20' });
     let currentWeek = 1;
     let targetFolderId = "";
@@ -20,13 +20,16 @@ async function getSheetsData(spreadsheetId) {
 
     if (configData.data.values) {
         configData.data.values.forEach(row => {
-            if (row[0] === 'CURRENT_WEEK') currentWeek = parseInt(row[1]);
-            if (row[0] === 'HEVY_FOLDER_ID') targetFolderId = row[1];
-            if (row[0] === 'BODYWEIGHT') bodyweight = parseFloat(row[1]);
-            if (row[0] === 'AGE') age = parseInt(row[1]);
-            if (row[0] === 'GENDER') gender = row[1];
-            if (row[0] === 'OTHER_SPORTS') otherSports = row[1];
-            if (row[0] === 'INJURIES') injuries = row[1];
+            // Zabráníme pádu, pokud je buňka ve sloupci B prázdná
+            const val = row[1] ? row[1].trim() : "";
+            
+            if (row[0] === 'CURRENT_WEEK') currentWeek = parseInt(val) || 1;
+            if (row[0] === 'HEVY_FOLDER_ID') targetFolderId = val;
+            if (row[0] === 'BODYWEIGHT') bodyweight = parseFloat(val) || 85;
+            if (row[0] === 'AGE') age = parseInt(val) || 30;
+            if (row[0] === 'GENDER') gender = val || "muž";
+            if (row[0] === 'OTHER_SPORTS') otherSports = val || "nic";
+            if (row[0] === 'INJURIES') injuries = val || "žádná";
         });
     }
 
@@ -35,13 +38,19 @@ async function getSheetsData(spreadsheetId) {
     const currentPhase = planData.data.values[0][1];
     const currentRules = planData.data.values[0][2];
 
-    // 3. Čtení 1RM
-    const rmData = await sheets.spreadsheets.values.get({ spreadsheetId, range: '1RM!A2:E100' });
-    const user1RM = rmData.data.values ? rmData.data.values.map(row => ({
-        cvik: row[0],
-        max_kg: row[1],
-        hevy_id: row[3]
-    })) : [];
+    // 3. Čtení 1RM (Nový formát pro AI injektáž!)
+    const rmData = await sheets.spreadsheets.values.get({ spreadsheetId, range: '1RM!A2:E200' });
+    const user1RM = {};
+    if (rmData.data.values) {
+        rmData.data.values.forEach(row => {
+            const maxKg = parseFloat(row[1]);
+            const hevyId = row[3];
+            // Pokud máme ID a váha je platné číslo, přidáme do slovníku
+            if (hevyId && !isNaN(maxKg)) {
+                user1RM[hevyId] = maxKg;
+            }
+        });
+    }
 
     return {
         currentWeek,
@@ -57,17 +66,14 @@ async function getSheetsData(spreadsheetId) {
     };
 }
 
-/**
- * Aktualizuje číslo týdne v Google Tabulce
- */
 async function incrementWeek(spreadsheetId, currentWeek) {
+    // ... obsah funkce incrementWeek zůstává úplně stejný jako máš doteď ...
     const auth = new google.auth.GoogleAuth({
         keyFile: './google-credentials.json',
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     const sheets = google.sheets({ version: 'v4', auth: await auth.getClient() });
 
-    // Logika restartu: po 12 týdnech znova od 1
     let nextWeek = currentWeek + 1;
     if (nextWeek > 12) {
         console.log("♻️ Cyklus dokončen. Restartuji na týden 1.");
@@ -84,7 +90,6 @@ async function incrementWeek(spreadsheetId, currentWeek) {
     console.log(`📅 Týden v tabulce posunut na: ${nextWeek}`);
 }
 
-// JEDEN SPOLEČNÝ EXPORT PRO VŠECHNY FUNKCE
 module.exports = {
     getSheetsData,
     incrementWeek

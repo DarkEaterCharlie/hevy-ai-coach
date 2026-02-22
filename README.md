@@ -1,55 +1,24 @@
-🏋️ Hevy AI Coach (v2.0 - Local Storage Edition)
-Hevy AI Coach je modulární Node.js asistent pro elitní silové sportovce. Verze 2.0 přináší úplné odstranění závislosti na Google Sheets a přechází na lokální databázový model pro vyšší rychlost a stabilitu.
+# 🏋️‍♂️ Hevy AI Coach - v4 Hybrid (Online Brain)
 
-🧠 Hlavní Funkce
-Local Data Core: Veškerá konfigurace, profil atleta a tréninkový plán jsou uloženy lokálně v souborech user_db.json a training_plan.json.
+Vítej ve verzi **v4-online-brain**. Tohle je ultimátní hybridní AI trenér, který spojuje to nejlepší ze dvou světů:
 
-AI Discovery & Smart Catalog: Automaticky analyzuje tvou databázi cviků v Hevy a inteligentně mapuje rodiny cviků (např. progres z kliku na weighted variantu).
+🧠 **Lokální mozek (JSON):** Řídí tréninkovou logiku, periodizaci, RPE a intenzitu (`config/training_plan.json`).
+☁️ **Online svaly (Google Sheets):** Dodává dynamická data – aktuální tělesnou váhu, aktuální týden a hlavně **čerstvé 1RM maximálky**.
 
-CNS Shield & Autoregulace: Striktně vynucuje bezpečnostní limity (max 7 opakování u dřepu/tahu) a automaticky počítá váhy na základě tvého aktuálního E-1RM z historie.
+## 🚀 Co je nového ve v4:
+* **Přímá injektáž 1RM:** AI už nevaří z vody. Vidí tvá reálná maxima (E-1RM) z Google Sheets a přesně z nich počítá pracovní série.
+* **Chytrá matematika (Prilepinova logika):** Zrušeny tupé limity opakování. Umělá inteligence nyní chápe vztah: *Váha jde nahoru = opakování musí jít dolů*. Respektuje hypertrofickou i silovou fázi.
+* **Podpora času (Vteřiny):** Planky a izometrické cviky konečně fungují a zapisují se přesně na vteřiny!
+* **Automatický posuv týdne:** Po schválení plánu se v Google Tabulce automaticky zvedne počítadlo týdne o +1.
+* **Plná integrace API:** Zápis přes `PUT` metodu rovnou do existujících rutin v Hevy (přes mikroservis `uploader.js`).
 
-Hevy Cloud Sync: Přímý upload vygenerovaných rutin do tvé mobilní aplikace pomocí Hevy API.
+## ⚙️ Jak to spustit:
+1. Ujisti se, že máš správně nastavené `.env` a aktivní Google API klíče (`google-credentials.json`).
+2. Spusť hlavního orchestrátora:
+   ```bash
+   node coach.js
+Zkontroluj vygenerované váhy, série a opakování přímo ve výpisu v terminálu.
 
-Pojistka proti smazání warmupů: Writer modul garantuje, že AI nikdy neodstraní tvé manuálně nastavené rozcvičovací série ze šablony.
+Napiš ano pro odeslání do mobilu (Hevy) a automatické posunutí týdne online.
 
-📂 Struktura Projektu
-coach.js: Hlavní orchestrátor řídící sběr dat a generování plánu.
-
-services/storageService.js: Nový mozek pro správu lokálních dat a posun tréninkových týdnů.
-
-services/aiService.js: Komunikace s Gemini API (využívá modely Flash/Pro).
-
-services/hevyService.js: Konektor pro Hevy API (stahování rutin, historie a nahrávání změn).
-
-runDiscovery.js: Skript pro analýzu nových cviků a aktualizaci smart_catalog.json.
-
-prompts/: Modulární trenérská pravidla (safety, progression, discovery, output).
-
-🚀 Rychlý Start
-1. Instalace
-
-Bash
-npm install
-2. První spuštění (Onboarding)
-
-Při prvním spuštění tě trenér provede dotazníkem, vytěží tvé maximálky z historie Hevy a vytvoří soubor .env a config/user_db.json.
-
-Bash
-node coach.js
-3. Discovery (Volitelné)
-
-Pokud jsi v Hevy přidal nové cviky, spusť discovery pro jejich zařazení do progresních rodin:
-
-Bash
-node runDiscovery.js
-🔐 Bezpečnost a Git
-Citlivá data: Soubory .env, google-credentials.json a celá složka exports/ jsou v .gitignore.
-
-Secrets: V GitHub Actions (workflow pondeli.yml) se používají šifrované secrets pro API klíče.
-
-🛠️ Jak projekt upravit
-Tréninková logika: Pravidla, jak má AI přemýšlet, upravuj přímo v textových souborech ve složce /prompts.
-
-Periodizace: Tvůj 12-týdenní plán (fáze, intenzita, RPE cíle) najdeš v config/training_plan.json.
-
-Autor: Jarda the Developer & Gemini Coach
+Ať to roste! 💪

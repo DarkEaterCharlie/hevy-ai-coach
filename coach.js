@@ -1,82 +1,86 @@
 require('dotenv').config();
-//const { getSheetsData, incrementWeek } = require('./services/sheetsService');
-const { getLocalData, incrementLocalWeek } = require('./services/storageService');
+const { getSheetsData, incrementWeek } = require('./services/sheetsService');
 const { getFolderRoutines, getLastWorkouts } = require('./services/hevyService');
 const { generateTrainingPlan } = require('./services/aiService');
 const { exportPlanToHevyFiles } = require('./writer');
 const { syncExportsToHevy } = require('./uploader');
-const { runOnboarding } = require('./utils/onboarding'); // 👈 TADY JE TEN CHYBĚJÍCÍ IMPORT
+const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 
 async function runModularCoach() {
-    console.log("🤖 START: Probouzím modulárního AI Trenéra...\n");
+    console.log("🤖 START: Probouzím hybridního AI Trenéra (v4)...\n");
 
     try {
-        // 0. ONBOARDING: Zkontroluje/vytvoří databázi a vytěží maximálky
-        await runOnboarding(); // 👈 TADY ZASTAVÍME BĚH A VYTVOŘÍME SOUBOR
-        // 1. Sběr dat
-        console.log("📊 [Modul: Sheets] Čtu Google Tabulku...");
-       // const sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
-        const sheetsData = await getLocalData();
+        // 1. Sběr dat (Hybridní model: Profil a 1RM z Google Sheets)
+        console.log("📊 [Modul: Sheets] Čtu data z Google Tabulky...");
+        const sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
+
+        // 2. Čtení tréninkové logiky (Z lokálního disku)
+        console.log("📂 [Modul: Storage] Čtu statický plán periodizace...");
+        const planPath = path.join(__dirname, './config/training_plan.json');
+        const trainingPlan = JSON.parse(fs.readFileSync(planPath, 'utf-8'));
         
+        // Získáme pravidla pro aktuální týden (pokud neexistuje, fallback na týden 1)
+        const periodization = trainingPlan.weeks[String(sheetsData.currentWeek)] || trainingPlan.weeks["1"];
+
         console.log("📜 [Modul: Hevy] Analyzuji tvou nedávnou historii...");
         const history = await getLastWorkouts(process.env.HEVY_API_KEY, 5);
 
-        console.log(`🏋️ [Modul: Hevy] Stahuji šablony rutiny...`);
+        console.log(`🏋️ [Modul: Hevy] Stahuji šablony rutiny ze složky: ${sheetsData.targetFolderId}...`);
         const routines = await getFolderRoutines(process.env.HEVY_API_KEY, sheetsData.targetFolderId);
 
-        // 2. Generování plánu
-                console.log("🛠️ [Modul: Transformace] Injektuji 1RM přímo do šablon...");
-                
-                // Vytvoříme novou strukturu rutin, kde ke každému cviku přilepíme jeho 1RM z databáze
-                const routinesWith1RM = routines.map(rutina => ({
-                    nazev_rutiny: rutina.nazev_rutiny,
-                    id_rutiny: rutina.id_rutiny,
-                    cviky: rutina.cviky.map(cvik => ({
-                        nazev: cvik.nazev,
-                        hevy_id: cvik.hevy_id,
-                        pocet_predepsanych_serii: cvik.pocet_predepsanych_serii,
-                        pocet_warmup_serii: cvik.pocet_warmup_serii,
-                        aktualni_1RM_kg: sheetsData.user1RM[cvik.hevy_id] || 0 // Tohle AIčkem konečně trkne!
-                    }))
-                }));
+        // 3. Transformace: Injektáž online 1RM přímo do šablon
+        console.log("🛠️ [Modul: Transformace] Injektuji 1RM ze Sheets přímo do cviků...");
+        const routinesWith1RM = routines.map(rutina => ({
+            nazev_rutiny: rutina.nazev_rutiny,
+            id_rutiny: rutina.id_rutiny,
+            cviky: rutina.cviky.map(cvik => ({
+                nazev: cvik.nazev,
+                hevy_id: cvik.hevy_id,
+                pocet_predepsanych_serii: cvik.pocet_predepsanych_serii,
+                pocet_warmup_serii: cvik.pocet_warmup_serii,
+                aktualni_1RM_kg: sheetsData.user1RM[cvik.hevy_id] || 0 // Tady dojde ke spárování!
+            }))
+        }));
 
-                console.log("🧠 [Modul: AI] Generuji tréninkový plán...");
-                const plan = await generateTrainingPlan({
-                    currentWeek: sheetsData.currentWeek,
-                    periodization: sheetsData.periodization,
-                    phase: sheetsData.currentPhase,
-                    rules: sheetsData.currentRules,
-                    history: history,
-                    routines: routinesWith1RM, // 👈 Podstrčíme ty obohacené rutiny
-                    bodyweight: sheetsData.bodyweight,
-                    age: sheetsData.age,
-                    gender: sheetsData.gender,
-                    otherSports: sheetsData.otherSports,
-                    injuries: sheetsData.injuries
-                    // maxima: sheetsData.user1RM  <-- TOHLE JSEM SMAZAL, UŽ TO TAM NEPOTŘEBUJEME
-                });
-        // 3. Lokální transformace a výpis (příprava souborů v /exports)
+        // 4. Generování plánu
+        console.log("🧠 [Modul: AI] Generuji tréninkový plán...");
+        const plan = await generateTrainingPlan({
+            currentWeek: sheetsData.currentWeek,
+            periodization: periodization,
+            phase: periodization.phase,
+            // Sloučíme poznámky z lokálního JSONu a Google Sheets tabulky
+            rules: periodization.note || sheetsData.currentRules,
+            history: history,
+            routines: routinesWith1RM, // Posíláme obohacené rutiny
+            bodyweight: sheetsData.bodyweight,
+            age: sheetsData.age,
+            gender: sheetsData.gender,
+            otherSports: sheetsData.otherSports,
+            injuries: sheetsData.injuries
+        });
+
+        // 5. Lokální uložení a výpis
         await exportPlanToHevyFiles(plan, routines);
         printPlanLocally(plan);
 
-        // 4. Interaktivní finále
+        // 6. Interaktivní finále a nahrávání
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         });
 
         console.log("---");
-        rl.question(`❓ Plán je ready. Chceš ho nahrát do Hevy a posunout týden v tabulce na ${sheetsData.currentWeek + 1}? (ano/ne): `, async (answer) => {
+        rl.question(`❓ Plán je ready. Chceš ho nahrát do Hevy a posunout týden online na ${sheetsData.currentWeek + 1}? (ano/ne): `, async (answer) => {
             if (answer.toLowerCase() === 'ano') {
                 console.log("\n🚀 Startuji nahrávání...");
                 
                 // Spuštění mikroservisu pro Hevy
-             //   await syncExportsToHevy(process.env.HEVY_API_KEY);
+                await syncExportsToHevy(process.env.HEVY_API_KEY);
                 
-                // Posun týdne v tabulce
-                //await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
-                //await incrementLocalWeek(sheetsData.currentWeek);
+                // Posun týdne v tabulce (zavolá Sheets API)
+                await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
                 
                 console.log("✅ Všechno je v mobilu i v tabulce.");
             } else {
@@ -91,6 +95,9 @@ async function runModularCoach() {
         if (error.stack) console.error(error.stack);
     }
 }
+
+// Sem pokračuje tvoje funkce printPlanLocally(plan) { ... }
+// nezapomeň ji tam nechat, a pak runModularCoach() úplně dole!
 
 function printPlanLocally(plan) {
     if (!plan || !plan.tydenni_plan) {

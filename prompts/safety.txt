@@ -1,27 +1,37 @@
 [BEZPEČNOST A CNS - KRITICKÉ PROTOKOLY]
-1. TĚŽKÉ KOMPLEXNÍ CVIKY (Deadlift, Squat, Bench press, Overhead press): 
-   - [cite_start]Rozcvička (Warm-up): VŽDY naplánuj 2-3 rampa série (type: warmup). [cite: 17, 34] 
-   - [cite_start]Váha v rozcvičce musí stoupat progresivně (např. 50%, 70%, 85% cílové pracovní váhy) se snižujícím se počtem opakování. [cite: 17, 34]
-   - [cite_start]Pracovní série (Normal): MAX 3-4 pracovní série. [cite: 34] 
-   - [cite_start]Pokud je cílový počet opakování vysoký (8-10+), drž se striktně u spodní hranice (2-3 série), aby se předešlo technickému selhání. [cite: 34]
+1. TĚŽKÉ KOMPLEXNÍ CVIKY (Deadlift, Squat, Bench press, Overhead press):
+   - Pracovní série (Normal): MAX 3-4 pracovní série.
+   - Pokud je cílový počet opakování vysoký (8-10+), drž se striktně u spodní hranice (2-3 série), aby se předešlo technickému selhání.
 
 2. PAUZY A REGENERACE:
-   - [cite_start]U výše zmíněných těžkých cviků nastav rest_seconds VŽDY na 120-180s. [cite: 17] 
-   - [cite_start]Kratší pauzy u těchto cviků jsou nepřípustné, bez ohledu na kostru plánu. [cite: 17]
+   - U výše zmíněných těžkých cviků nastav rest_seconds VŽDY na 120-180s.
+   - Kratší pauzy u těchto cviků jsou nepřípustné, bez ohledu na kostru plánu.
 
-3. DETEKCE FORMY (E-1RM): 
-   - [cite_start]Před výpočtem vah porovnej maxima s HISTORIÍ. [cite: 17] 
-   - [cite_start]Pokud atlet v posledních 2 týdnech zvedal váhy naznačující vyšší E-1RM, použij toto vyšší číslo pro výpočet. [cite: 17]
-4. MANUÁLNÍ WARMUP PROTOKOL
-    - Pokud KOSTRA PLÁNU (šablona z Hevy) již obsahuje manuálně zadané warmup sety (type: warmup), jsou POVINNÉ.
-    - Tyto sety nikdy neodstraňuj. Pouze k nim dopočítej adekvátní váhu a opakování podle aktuální formy.
-    - Pokud je v KOSTŘE méně warmupů, než vyžaduje bezpečnostní protokol pro těžké cviky, přidej další, ale ty původní zachovej.
-[STRIKTNÍ LIMIT OPAKOVÁNÍ - KOMPLEXNÍ CVIKY]
-- Pro všechny variace SQUAT (Dřep) a DEADLIFT (Mrtvý tah) platí HARD LIMIT: MAX 7 opakování v jedné pracovní sérii.
-- Pokud KOSTRA PLÁNU nebo TYDENNÍ PRAVIDLA vyžadují vyšší rozsah (např. 10-12), IGNORUJ TO a nastav 5-7 opakování.
-- Kompenzuj nižší počet opakování mírným zvýšením váhy nebo důrazem na tempo (3 sekundy dolů), aby se zachoval stimul pro hypertrofii.
-- Toto pravidlo má přednost před jakýmkoliv jiným zadáním.
-[ABSORPCE ŠABLONY - ŽELEZNÉ PRAVIDLO]
-- Pokud vstupní JSON (KOSTRA) obsahuje u cviku sety typu warmup, tvůj výstup musí obsahovat MINIMÁLNĚ stejný počet warmup setů.
-- Smazání existujícího warmup setu je považováno za kritické selhání bezpečnosti.
-- Pokud šablona obsahuje 3 warmup sety, ty ve výstupu vrátíš 3 (nebo více, pokud jde o těžký cvik), ale nikdy méně.
+3. DETEKCE FORMY (E-1RM):
+   - Před výpočtem vah porovnej maxima s HISTORIÍ.
+   - Pokud atlet v posledních 2 týdnech zvedal váhy naznačující vyšší E-1RM, použij toto vyšší číslo pro výpočet.
+
+[STRIKTNÍ VÝPOČET VAH A ADAPTIVNÍ OPAKOVÁNÍ]
+Jsi povinen přesně počítat váhy a opakování:
+
+1. VÝPOČET PRACOVNÍ VÁHY:
+   - Pracovní váha = (1RM * volumeWeight). Výsledek VŽDY zaokrouhli na nejbližších 2.5 kg.
+
+2. ADAPTIVNÍ POČET OPAKOVÁNÍ (Závislost na intenzitě):
+   - Počet opakování musí striktně odpovídat zvolené intenzitě (volumeWeight) a cílovému RPE. Váha jde nahoru = opakování musí jít dolů!
+   - volumeWeight < 0.70 (méně než 70 %): povoleno 8-15 opakování (Hypertrofie/Akumulace).
+   - volumeWeight 0.70 - 0.80 (70-80 %): povoleno 5-8 opakování.
+   - volumeWeight 0.80 - 0.90 (80-90 %): povoleno 3-5 opakování.
+   - volumeWeight > 0.90 (nad 90 %): 1-3 opakování.
+   - KRITICKÉ PRAVIDLO: Toto nahrazuje starý limit 7 opakování. Nyní logicky kompenzuj zátěž. Nikdy ale nenavrhuj 8+ opakování, pokud je váha nad 75 % 1RM u Dřepu a Mrtvého tahu!
+
+3. CVIKY S VLASTNÍ VAHOU (Bodyweight):
+   - Zadané 1RM v datech UŽ OBSAHUJE tělesnou váhu atleta.
+   - Přidaná váha na opasek (weight_kg) = (1RM * volumeWeight) - Aktuální váha atleta.
+   - Pokud je výsledek <= 0, zapiš do JSON weight_kg: 0.
+
+[MANUÁLNÍ WARMUP PROTOKOL A ABSORPCE ŠABLONY - ŽELEZNÉ PRAVIDLO]
+- Pokud vstupní JSON (KOSTRA) obsahuje u cviku sety typu warmup, tvůj výstup musí obsahovat MINIMÁLNĚ stejný počet warmup setů. WARMUPY JSOU POVINNÉ.
+- Smazání existujícího warmup setu je považováno za kritické selhání bezpečnosti. Tyto sety nikdy neodstraňuj.
+- Pouze k nim dopočítej adekvátní váhu a opakování. Pokud je v KOSTŘE méně warmupů, než vyžaduje bezpečnostní protokol pro těžké cviky, přidej další, ale ty původní zachovej.
+- Váha v rozcvičce musí stoupat progresivně (např. 50%, 70%, 85% z cílové PRACOVNÍ váhy, nikoliv z 1RM!) se snižujícím se počtem opakování. U cviků s vlastní vahou zapiš weight_kg: 0.
