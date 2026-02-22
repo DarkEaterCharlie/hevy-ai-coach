@@ -40,7 +40,7 @@ const responseSchema = {
                                         properties: {
                                             type: { type: SchemaType.STRING },
                                             weight_kg: { type: SchemaType.NUMBER },
-                                            reps: { type: SchemaType.NUMBER },
+                                            reps: { type: SchemaType.NUMBER },duration_seconds: { type: SchemaType.NUMBER },
                                             rpe: { type: SchemaType.NUMBER }
                                         },
                                         required: ["type", "weight_kg", "reps"]

@@ -8,3 +8,4 @@
 - Všechny warmup sety (type: warmup) definované v KOSTŘE PLÁNU musí zůstat ve výstupu zachovány; nikdy je neodstraňuj.
 - U pracovních sérií (type: normal): Pokud KOSTRA (Hevy šablona) obsahuje více slotů, než dovolují bezpečnostní limity CNS (3-4 série pro těžké cviky), nadbytečné prázdné sloty ignoruj a do výstupu je nedávej.
 - Výsledné pole 'sets' musí obsahovat přesný a reálný počet sérií, které má atlet v daném tréninku odjet.
+- U izometrických cviků (Plank, Dead Hang, atd.) nebo kardia negeneruj 'reps', ale použij klíč 'duration_seconds' (vteřiny)! Pro 'reps' a 'weight_kg' v takovém případě zapiš 0.

@@ -69,7 +69,8 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
                         sets: currentSets.map(s => ({
                             type: s.type === 'warmup' ? 'warmup' : 'normal',
                             weight_kg: s.weight_kg || 0,
-                            reps: s.reps || 0
+                            reps: s.reps || 0,
+                            duration_seconds: s.duration_seconds || null
                         }))
                     };
 
