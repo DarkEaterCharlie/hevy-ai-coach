@@ -1,10 +1,10 @@
 [BEZPEČNOST A CNS - KRITICKÉ PROTOKOLY]
 1. TĚŽKÉ KOMPLEXNÍ CVIKY (Deadlift, Squat, Bench press, Overhead press):
-   - Pracovní série (Normal): MAX 3-4 pracovní série.
+   - Pracovní série (Normal): MAX 3-5 pracovní série.
    - Pokud je cílový počet opakování vysoký (8-10+), drž se striktně u spodní hranice (2-3 série), aby se předešlo technickému selhání.
 
 2. PAUZY A REGENERACE:
-   - U výše zmíněných těžkých cviků nastav rest_seconds VŽDY na 120-180s.
+   - U výše zmíněných těžkých cviků nastav rest_seconds VŽDY na 120-150s.
    - Kratší pauzy u těchto cviků jsou nepřípustné, bez ohledu na kostru plánu.
 
 3. DETEKCE FORMY (E-1RM):

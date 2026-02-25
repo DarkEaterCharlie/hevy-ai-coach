@@ -7,19 +7,30 @@ const { syncExportsToHevy } = require('./uploader');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-
+//přidáno pro automatické počítání po spuštění
+const { sync1RMToSheets } = require('./utils/sync_1rm');
 async function runModularCoach() {
     console.log("🤖 START: Probouzím hybridního AI Trenéra (v4)...\n");
 
     try {
-        // 1. Sběr dat (Hybridní model: Profil a 1RM z Google Sheets)
-        console.log("📊 [Modul: Sheets] Čtu data z Google Tabulky...");
-        const sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
+     
+                // 1. NEJDŘÍV přečteme data z Google Tabulky (získáme aktuální tělesnou váhu)
+                console.log("📊 [Modul: Sheets] Čtu tvůj profil a váhu z Google Tabulky...");
+                let sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
 
-        // 2. Čtení tréninkové logiky (Z lokálního disku)
-        console.log("📂 [Modul: Storage] Čtu statický plán periodizace...");
-        const planPath = path.join(__dirname, './config/training_plan.json');
-        const trainingPlan = JSON.parse(fs.readFileSync(planPath, 'utf-8'));
+                // 2. TEPRVE TEĎ odpálíme přepočet 1RM a PŘEDÁME mu tvojí váhu ze Sheets!
+                console.log(`🔄 [Modul: Sync 1RM] Přepočítávám tvá maxima pro váhu ${sheetsData.bodyweight} kg...`);
+                await sync1RMToSheets(sheetsData.bodyweight); // <--- TADY SE PŘEDÁVÁ TA VÁHA
+                console.log("✅ [Modul: Sync 1RM] Maxima jsou aktuální a zapsaná v tabulce!\n");
+
+                // 3. ZNOVU načteme data ze Sheets, abychom do AI poslali už ty ČERSTVĚ zapsané maximálky!
+                console.log("📊 [Modul: Sheets] Načítám čerstvě aktualizované 1RM pro AI...");
+                sheetsData = await getSheetsData(process.env.SPREADSHEET_ID);
+
+                // 4. Čtení tréninkové logiky (Z lokálního disku)
+                console.log("📂 [Modul: Storage] Čtu statický plán periodizace...");
+                const planPath = path.join(__dirname, './config/training_plan.json');
+                const trainingPlan = JSON.parse(fs.readFileSync(planPath, 'utf-8'));
         
         // Získáme pravidla pro aktuální týden (pokud neexistuje, fallback na týden 1)
         const periodization = trainingPlan.weeks[String(sheetsData.currentWeek)] || trainingPlan.weeks["1"];
@@ -106,7 +117,7 @@ async function runModularCoach() {
                 await syncExportsToHevy(process.env.HEVY_API_KEY);
                 
                 // Posun týdne v tabulce (zavolá Sheets API)
-                await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
+               await incrementWeek(process.env.SPREADSHEET_ID, sheetsData.currentWeek);
                 
                 console.log("✅ Všechno je v mobilu i v tabulce.");
             } else {
