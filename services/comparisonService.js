@@ -7,19 +7,19 @@ function getNewExercises() {
 
     const allTemplates = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
     
-    // Pokud smart_catalog ještě neexistuje, všechno je "nové"
+    // If smart_catalog doesn't exist yet, treat all exercises as new
     if (!fs.existsSync(catalogPath)) return allTemplates;
 
     const smartCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
     
-    // Vytvoříme seznam ID, která už v katalogu máme (v rodinách)
+    // Build a set of exercise IDs already present in the catalog (across all families)
     const knownIds = new Set();
     smartCatalog.forEach(family => {
         if (family.bodyweight_id) knownIds.add(family.bodyweight_id);
         if (family.weighted_id) knownIds.add(family.weighted_id);
     });
 
-    // Vrátíme jen ty cviky, které v katalogu chybí
+    // Return only exercises that are missing from the catalog
     return allTemplates.filter(ex => !knownIds.has(ex.id));
 }
 

@@ -1,7 +1,7 @@
 // hevyService.js
 
 async function getFolderRoutines(apiKey, folderId) {
-    console.log(`   [DEBUG] Calling Hevy API for folder ID: ${folderId}`);
+    console.log(`   [Hevy] Fetching routines for folder ID: ${folderId}...`);
     try {
         let page = 1;
         let allRoutines = [];
@@ -40,7 +40,7 @@ async function getFolderRoutines(apiKey, folderId) {
             page++;
         }
 
-        console.log(`   [DEBUG] Downloaded ${allRoutines.length} routines total. Filtering by folder...`);
+        console.log(`   [Hevy] Downloaded ${allRoutines.length} routines total. Filtering by folder...`);
 
         // Filter by target folder
         const folderRoutines = allRoutines.filter(r => String(r.folder_id) === String(folderId));
@@ -49,7 +49,7 @@ async function getFolderRoutines(apiKey, folderId) {
             throw new Error(`No routines found in folder with ID ${folderId}.`);
         }
 
-        console.log(`   [DEBUG] Found ${folderRoutines.length} routines in folder.`);
+        console.log(`   [Hevy] Found ${folderRoutines.length} routines in folder.`);
 
         return folderRoutines.map(routine => ({
             routine_name: routine.title || routine.name,
@@ -64,7 +64,7 @@ async function getFolderRoutines(apiKey, folderId) {
             }))
         }));
     } catch (error) {
-        console.error("🧨 [DEBUG HevyService] Failed to communicate with Hevy API!");
+        console.error("🧨 [Hevy] Failed to communicate with Hevy API!");
         throw error;
     }
 }
