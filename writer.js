@@ -2,48 +2,49 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Mikroservis pro transformaci a uložení plánu do Hevy-ready souborů
+ * Transforms an AI-generated training plan into Hevy-compatible JSON files,
+ * one file per routine, saved to the /exports directory.
  */
 async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
-    console.log("📂 [Modul: Writer] Čistím staré exporty a transformuji data...");
+    console.log("📂 [Module: Writer] Clearing old exports and transforming data...");
     const dir = './exports';
-    
+
     if (fs.existsSync(dir)) {
         fs.rmSync(dir, { recursive: true, force: true });
     }
     fs.mkdirSync(dir);
 
-    for (const trening of aiPlan.tydenni_plan) {
-        
+    for (const workout of aiPlan.weekly_plan) {
+
         const sourceRoutine = originalRoutines.find(r =>
-            r.nazev_rutiny.toLowerCase() === trening.nazev_treninku.toLowerCase()
+            r.routine_name.toLowerCase() === workout.workout_name.toLowerCase()
         );
 
         if (!sourceRoutine) {
-            console.warn(`⚠️ [Writer] Rutina "${trening.nazev_treninku}" nenalezena v Hevy šablonách.`);
+            console.warn(`⚠️ [Writer] Routine "${workout.workout_name}" not found in Hevy templates.`);
             continue;
         }
 
         const hevyFormat = {
             routine: {
-                title: trening.nazev_treninku,
-                notes: aiPlan.zprava_od_kouce || "",
-                exercises: trening.exercises.map(ex => {
-                    // Najdeme si originální cvik ze šablony, abychom znali počet warmupů
-                    const originalEx = sourceRoutine.cviky.find(c => c.hevy_id === ex.exercise_template_id);
-                    const requiredWarmups = originalEx ? originalEx.pocet_warmup_serii : 0;
-                    
-                    // Aktuální počet warmupů, které vrátilo AI
+                title: workout.workout_name,
+                notes: aiPlan.coach_message || "",
+                exercises: workout.exercises.map(ex => {
+                    // Look up the original exercise to determine the required warmup count
+                    const originalEx = sourceRoutine.exercises.find(c => c.hevy_id === ex.exercise_template_id);
+                    const requiredWarmups = originalEx ? originalEx.warmup_sets : 0;
+
+                    // Current sets returned by the AI
                     let currentSets = [...ex.sets];
                     const aiWarmupCount = currentSets.filter(s => s.type === 'warmup').length;
 
-                    // --- START POJISTKY ---
+                    // --- WARMUP SAFETY GUARD ---
                     if (aiWarmupCount < requiredWarmups) {
-                        console.warn(`⚠️ [Writer] AI smazalo warmup u cviku ${ex.exercise_template_id}. Opravuji...`);
-                        
+                        console.warn(`⚠️ [Writer] AI removed warmup for exercise ${ex.exercise_template_id}. Restoring...`);
+
                         const missingCount = requiredWarmups - aiWarmupCount;
                         const firstWorkSet = currentSets.find(s => s.type === 'normal') || { weight_kg: 20, reps: 10 };
-                        
+
                         const emergencyWarmups = [];
                         for (let i = 0; i < missingCount; i++) {
                             emergencyWarmups.push({
@@ -52,10 +53,10 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
                                 reps: firstWorkSet.reps + 2
                             });
                         }
-                        // Vložíme chybějící warmupy na začátek
+                        // Prepend missing warmups
                         currentSets = [...emergencyWarmups, ...currentSets];
                     }
-                    // --- KONEC POJISTKY ---
+                    // --- END WARMUP SAFETY GUARD ---
 
                     const rpeNotes = currentSets
                         .filter(s => s.type === 'normal')
@@ -76,8 +77,8 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
 
                     const finalNotes = [];
                     if (ex.notes) finalNotes.push(ex.notes);
-                    if (rpeNotes) finalNotes.push(`Cíl: ${rpeNotes}`);
-                    
+                    if (rpeNotes) finalNotes.push(`Target: ${rpeNotes}`);
+
                     if (finalNotes.length > 0) {
                         exercise.notes = finalNotes.join(' | ');
                     }
@@ -87,9 +88,9 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
             }
         };
 
-        const filePath = path.join(dir, `routine_${sourceRoutine.id_rutiny}.json`);
+        const filePath = path.join(dir, `routine_${sourceRoutine.routine_id}.json`);
         fs.writeFileSync(filePath, JSON.stringify(hevyFormat, null, 2), 'utf-8');
-        console.log(`✅ [Writer] Vygenerován Hevy soubor: routine_${sourceRoutine.id_rutiny}.json`);
+        console.log(`✅ [Writer] Generated Hevy file: routine_${sourceRoutine.routine_id}.json`);
     }
 }
 

@@ -1,17 +1,17 @@
-Jsi elitní biomechanický inženýr a silový kouč. Zanalyzuj tento katalog cviků z fitness aplikace Hevy.
-Tvým úkolem je vytvořit ÚPLNOU mapu rodin pro progresi.
+You are an elite biomechanical engineer and strength coach. Analyze this exercise catalog from the Hevy fitness app.
+Your task is to create a COMPLETE family map for exercise progression.
 
-PRAVIDLA PRO MAPOVÁNÍ:
-1. Hledej VŠECHNY biomechanicky identické dvojice (Bodyweight -> Weighted).
-2. Mapuj i varianty:
-    - Klasický cvik vs. Varianta se zátěží (Push Up -> Weighted Push Up)
-    - Klasický cvik vs. Varianta na stroji (Dips -> Seated Dip Machine)
-    - Bodyweight cvik vs. Varianta s jednoručkou/osou (Bulgarian Split Squat -> Bulgarian Split Squat Dumbbell)
-3. Hledej shodu i v Custom cvicích (podle názvu).
-4. "threshold_reps" nastav realisticky (8-12 pro těžké, 15-20 pro lehké cviky).
+MAPPING RULES:
+1. Find ALL biomechanically identical pairs (Bodyweight -> Weighted).
+2. Also map variants:
+    - Classic exercise vs. Weighted variant (Push Up -> Weighted Push Up)
+    - Classic exercise vs. Machine variant (Dips -> Seated Dip Machine)
+    - Bodyweight exercise vs. Dumbbell/Barbell variant (Bulgarian Split Squat -> Bulgarian Split Squat Dumbbell)
+3. Also look for matches in Custom exercises (by name).
+4. Set "threshold_reps" realistically (8-12 for heavy exercises, 15-20 for light exercises).
 
-POŽADAVKY NA VÝSTUP:
-- Chci vidět rodiny pro: Prsa, Záda, Nohy, Core, Paže, Krk.
-- Pokud existuje weighted alternativa, MUSÍ být v seznamu.
+OUTPUT REQUIREMENTS:
+- Include families for: Chest, Back, Legs, Core, Arms, Neck.
+- If a weighted alternative exists, it MUST be in the list.
 
-Vrať JSON: {"families": [{"name": "Název", "bodyweight_id": "ID", "weighted_id": "ID", "threshold_reps": number}]}
+Return JSON: {"families": [{"name": "Name", "bodyweight_id": "ID", "weighted_id": "ID", "threshold_reps": number}]}

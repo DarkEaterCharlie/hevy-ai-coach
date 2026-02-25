@@ -1,16 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const { updateHevyRoutine } = require('./services/hevyService'); // Změněno [cite: 1, 7]
+const { updateHevyRoutine } = require('./services/hevyService');
 
 /**
- * Mikroservis pro hromadné nahrání vygenerovaných plánů do Hevy
+ * Batch-uploads all generated routine files from /exports to Hevy via PUT requests.
  */
 async function syncExportsToHevy(apiKey) {
     const dir = './exports';
-    console.log("📤 [Modul: Uploader] Začínám synchronizaci s Hevy Cloudem...");
+    console.log("📤 [Module: Uploader] Starting sync with Hevy Cloud...");
 
     if (!fs.existsSync(dir)) {
-        console.warn("⚠️ [Uploader] Složka /exports neexistuje. Není co nahrávat.");
+        console.warn("⚠️ [Uploader] /exports directory does not exist. Nothing to upload.");
         return;
     }
 
@@ -18,17 +18,17 @@ async function syncExportsToHevy(apiKey) {
 
     for (const file of files) {
         try {
-            // Vytáhneme ID rutiny z názvu souboru (routine_ID.json) [cite: 5, 37]
+            // Extract routine ID from filename (routine_ID.json)
             const routineId = file.replace('routine_', '').replace('.json', '');
             const filePath = path.join(dir, file);
             const routineData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-            console.log(`⏳ [Uploader] Nahrávám ${file}...`);
+            console.log(`⏳ [Uploader] Uploading ${file}...`);
             await updateHevyRoutine(apiKey, routineId, routineData);
-            console.log(`✅ [Uploader] Rutina ${routineId} synchronizována.`);
-            
+            console.log(`✅ [Uploader] Routine ${routineId} synced.`);
+
         } catch (error) {
-            console.error(`❌ [Uploader] Chyba při nahrávání souboru ${file}:`, error.message);
+            console.error(`❌ [Uploader] Error uploading ${file}:`, error.message);
         }
     }
 }

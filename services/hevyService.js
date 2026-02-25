@@ -1,28 +1,27 @@
 // hevyService.js
 
-// Upravená funkce v hevyService.js
 async function getFolderRoutines(apiKey, folderId) {
-    console.log(`   [DEBUG] Volám Hevy API pro složku ID: ${folderId}`);
+    console.log(`   [DEBUG] Calling Hevy API for folder ID: ${folderId}`);
     try {
         let page = 1;
         let allRoutines = [];
         let keepFetching = true;
 
-        // Stránkování - stáhneme ÚPLNĚ VŠECHNY rutiny, co v appce máš
+        // Paginate through ALL routines in the account
         while (keepFetching) {
             const response = await fetch(`https://api.hevyapp.com/v1/routines?page=${page}&pageSize=10`, {
                 headers: { 'api-key': apiKey }
             });
-            
+
             if (response.status === 404) {
-                break; // Narazili jsme na konec seznamu
+                break; // Reached end of list
             }
 
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Hevy API vrátilo HTTP ${response.status}: ${errorText}`);
+                throw new Error(`Hevy API returned HTTP ${response.status}: ${errorText}`);
             }
-            
+
             const data = await response.json();
             const routines = Array.isArray(data) ? data : (data.routines || []);
 
@@ -33,71 +32,68 @@ async function getFolderRoutines(apiKey, folderId) {
 
             allRoutines.push(...routines);
 
-            // Pokud nám API vrátilo méně než 10 rutin, jsme na poslední stránce
+            // If API returned fewer than 10 routines, we're on the last page
             if (routines.length < 10) {
                 keepFetching = false;
             }
-            
+
             page++;
         }
 
-        console.log(`   [DEBUG] Staženo celkem ${allRoutines.length} rutin. Filtruji složku...`);
+        console.log(`   [DEBUG] Downloaded ${allRoutines.length} routines total. Filtering by folder...`);
 
-        // Teď teprve filtrujeme podle složky
+        // Filter by target folder
         const folderRoutines = allRoutines.filter(r => String(r.folder_id) === String(folderId));
 
         if (folderRoutines.length === 0) {
-            throw new Error(`Ve složce s ID ${folderId} nejsou žádné rutiny.`);
+            throw new Error(`No routines found in folder with ID ${folderId}.`);
         }
 
-        console.log(`   [DEBUG] Ve složce nalezeno ${folderRoutines.length} rutin!`);
+        console.log(`   [DEBUG] Found ${folderRoutines.length} routines in folder.`);
 
-        // hevyService.js - Úprava mapování rutin
         return folderRoutines.map(routine => ({
-            nazev_rutiny: routine.title || routine.name,
-            id_rutiny: routine.id,
-            cviky: routine.exercises.map(ex => ({
-                nazev: ex.title || ex.name,
+            routine_name: routine.title || routine.name,
+            routine_id: routine.id,
+            exercises: routine.exercises.map(ex => ({
+                name: ex.title || ex.name,
                 hevy_id: ex.exercise_template_id,
-                pocet_predepsanych_serii: ex.sets.length,
-                // PŘIDÁNO: Spočítáme warmup série v šabloně
-                pocet_warmup_serii: ex.sets.filter(s => s.type === 'warmup').length,
+                prescribed_sets: ex.sets.length,
+                warmup_sets: ex.sets.filter(s => s.type === 'warmup').length,
                 rest_seconds: ex.rest_seconds,
                 superset_id: ex.superset_id
             }))
         }));
     } catch (error) {
-        console.error("🧨 [DEBUG HevyService] Selhání při komunikaci s Hevy!");
+        console.error("🧨 [DEBUG HevyService] Failed to communicate with Hevy API!");
         throw error;
     }
 }
 
-// Přidaná funkce pro historii
 async function getLastWorkouts(apiKey, count = 5) {
     try {
         const response = await fetch(`https://api.hevyapp.com/v1/workouts?page=1&pageSize=${count}`, {
             headers: { 'api-key': apiKey }
         });
-        
-        if (!response.ok) throw new Error(`Hevy API historie selhala: ${response.status}`);
-        
+
+        if (!response.ok) throw new Error(`Hevy API workout history request failed: ${response.status}`);
+
         const data = await response.json();
         const workouts = Array.isArray(data) ? data : (data.workouts || []);
 
         return workouts.map(w => ({
-            nazev: w.title,
-            datum: new Date(w.start_time).toLocaleDateString('cs-CZ'),timestamp: new Date(w.start_time).getTime(), // <--- PŘIDÁNO PRO FILTR
-            cviky: w.exercises.map(ex => ({
-                nazev: ex.title,
-                serie: ex.sets.map(s => `${s.weight_kg}kg x ${s.reps} (RPE ${s.rpe || '?'})`)
+            name: w.title,
+            date: new Date(w.start_time).toLocaleDateString('en-US'),
+            timestamp: new Date(w.start_time).getTime(),
+            exercises: w.exercises.map(ex => ({
+                name: ex.title,
+                sets: ex.sets.map(s => `${s.weight_kg}kg x ${s.reps} (RPE ${s.rpe || '?'})`)
             }))
         }));
     } catch (error) {
-        console.error("🧨 Chyba při stahování historie!");
+        console.error("🧨 Error fetching workout history!");
         throw error;
     }
 }
-// Do hevyService.js přidej:
 
 async function updateHevyRoutine(apiKey, routineId, routineData) {
     const response = await fetch(`https://api.hevyapp.com/v1/routines/${routineId}`, {
@@ -117,7 +113,4 @@ async function updateHevyRoutine(apiKey, routineId, routineData) {
     return await response.json();
 }
 
-// Nezapomeň ji vyexportovat
 module.exports = { getFolderRoutines, getLastWorkouts, updateHevyRoutine };
-
-

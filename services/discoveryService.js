@@ -3,19 +3,19 @@ const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 async function discoverExerciseRelationships(apiKey) {
-    console.log("🔍 [Discovery] Analyzuji katalog cviků pro v2.0...");
-    
+    console.log("🔍 [Discovery] Analyzing exercise catalog...");
+
     const dbPath = path.join(__dirname, '../templates_db.json');
     const catalogPath = path.join(__dirname, '../config/smart_catalog.json');
-    const promptPath = path.join(__dirname, '../prompts/discovery.txt'); // <-- Cesta k novému promptu
+    const promptPath = path.join(__dirname, '../prompts/discovery.txt');
 
     if (!fs.existsSync(dbPath)) {
-        throw new Error("❌ Chybí templates_db.json! Nejdřív stáhni data z Hevy.");
+        throw new Error("❌ templates_db.json is missing! Run sync_templates.js first.");
     }
 
     const templates = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
-    const basePrompt = fs.readFileSync(promptPath, 'utf-8'); // <-- Načtení promptu
-    
+    const basePrompt = fs.readFileSync(promptPath, 'utf-8');
+
     const relevantExercises = templates.filter(ex =>
         ex.type === 'weight_reps' || ex.type === 'reps_only' || ex.type.includes('bodyweight')
     );
@@ -26,25 +26,25 @@ async function discoverExerciseRelationships(apiKey) {
         generationConfig: { responseMimeType: "application/json" }
     });
 
-    // Sestavení finálního promptu: Text ze souboru + dynamická data (seznam cviků)
+    // Combine the static prompt with the dynamic exercise list
     const finalPrompt = `
         ${basePrompt}
-        
-        SEZNAM CVIKŮ K ANALÝZE:
-        ${JSON.stringify(relevantExercises.map(ex => ({id: ex.id, title: ex.title})))}
+
+        EXERCISE LIST TO ANALYZE:
+        ${JSON.stringify(relevantExercises.map(ex => ({ id: ex.id, title: ex.title })))}
     `;
 
     try {
         const result = await model.generateContent(finalPrompt);
         const data = JSON.parse(result.response.text());
-        
+
         const configDir = path.join(__dirname, '../config');
         if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
 
         fs.writeFileSync(catalogPath, JSON.stringify(data.families, null, 2));
-        console.log(`✅ [Discovery] Katalog 'smart_catalog.json' vytvořen! Nalezeno ${data.families.length} rodin.`);
+        console.log(`✅ [Discovery] smart_catalog.json created with ${data.families.length} exercise families.`);
     } catch (error) {
-        console.error("🧨 [Discovery] AI analýza selhala:", error.message);
+        console.error("🧨 [Discovery] AI analysis failed:", error.message);
     }
 }
 

@@ -1,37 +1,37 @@
-[BEZPEČNOST A CNS - KRITICKÉ PROTOKOLY]
-1. TĚŽKÉ KOMPLEXNÍ CVIKY (Deadlift, Squat, Bench press, Overhead press):
-   - Pracovní série (Normal): MAX 3-5 pracovní série.
-   - Pokud je cílový počet opakování vysoký (8-10+), drž se striktně u spodní hranice (2-3 série), aby se předešlo technickému selhání.
+[SAFETY AND CNS - CRITICAL PROTOCOLS]
+1. HEAVY COMPOUND EXERCISES (Deadlift, Squat, Bench Press, Overhead Press):
+   - Working sets (Normal): MAX 3-5 working sets.
+   - If the target rep count is high (8-10+), stay strictly at the lower end (2-3 sets) to prevent technical breakdown.
 
-2. PAUZY A REGENERACE:
-   - U výše zmíněných těžkých cviků nastav rest_seconds VŽDY na 120-150s.
-   - Kratší pauzy u těchto cviků jsou nepřípustné, bez ohledu na kostru plánu.
+2. REST PERIODS AND RECOVERY:
+   - For the heavy compound exercises above, always set rest_seconds to 120-150s.
+   - Shorter rest periods for these exercises are not permitted, regardless of the plan template.
 
-3. DETEKCE FORMY (E-1RM):
-   - Před výpočtem vah porovnej maxima s HISTORIÍ.
-   - Pokud atlet v posledních 2 týdnech zvedal váhy naznačující vyšší E-1RM, použij toto vyšší číslo pro výpočet.
+3. FORM DETECTION (E-1RM):
+   - Before calculating working weights, cross-reference the maxes with the HISTORY.
+   - If the athlete has lifted weights in the last 2 weeks suggesting a higher E-1RM, use that higher number for calculation.
 
-[STRIKTNÍ VÝPOČET VAH A ADAPTIVNÍ OPAKOVÁNÍ]
-Jsi povinen přesně počítat váhy a opakování:
+[STRICT WEIGHT AND ADAPTIVE REP CALCULATION]
+You are required to calculate weights and reps precisely:
 
-1. VÝPOČET PRACOVNÍ VÁHY:
-   - Pracovní váha = (1RM * volumeWeight). Výsledek VŽDY zaokrouhli na nejbližších 2.5 kg.
+1. WORKING WEIGHT CALCULATION:
+   - Working weight = (1RM * volumeWeight). Always round the result to the nearest 2.5 kg.
 
-2. ADAPTIVNÍ POČET OPAKOVÁNÍ (Závislost na intenzitě):
-   - Počet opakování musí striktně odpovídat zvolené intenzitě (volumeWeight) a cílovému RPE. Váha jde nahoru = opakování musí jít dolů!
-   - volumeWeight < 0.70 (méně než 70 %): povoleno 8-15 opakování (Hypertrofie/Akumulace).
-   - volumeWeight 0.70 - 0.80 (70-80 %): povoleno 5-8 opakování.
-   - volumeWeight 0.80 - 0.90 (80-90 %): povoleno 3-5 opakování.
-   - volumeWeight > 0.90 (nad 90 %): 1-3 opakování.
-   - KRITICKÉ PRAVIDLO: Toto nahrazuje starý limit 7 opakování. Nyní logicky kompenzuj zátěž. Nikdy ale nenavrhuj 8+ opakování, pokud je váha nad 75 % 1RM u Dřepu a Mrtvého tahu!
+2. ADAPTIVE REP RANGES (intensity-dependent):
+   - Rep count must strictly match the selected intensity (volumeWeight) and target RPE. Weight goes up = reps must come down!
+   - volumeWeight < 0.70 (below 70%): 8-15 reps allowed (Hypertrophy/Accumulation).
+   - volumeWeight 0.70 - 0.80 (70-80%): 5-8 reps allowed.
+   - volumeWeight 0.80 - 0.90 (80-90%): 3-5 reps allowed.
+   - volumeWeight > 0.90 (above 90%): 1-3 reps.
+   - CRITICAL RULE: This replaces the old 7-rep limit. Compensate load logically. Never prescribe 8+ reps if weight is above 75% of 1RM for Squat or Deadlift!
 
-3. CVIKY S VLASTNÍ VAHOU (Bodyweight):
-   - Zadané 1RM v datech UŽ OBSAHUJE tělesnou váhu atleta.
-   - Přidaná váha na opasek (weight_kg) = (1RM * volumeWeight) - Aktuální váha atleta.
-   - Pokud je výsledek <= 0, zapiš do JSON weight_kg: 0.
+3. BODYWEIGHT EXERCISES:
+   - The 1RM value in the data ALREADY INCLUDES the athlete's bodyweight.
+   - Added weight on belt (weight_kg) = (1RM * volumeWeight) - athlete's current bodyweight.
+   - If the result is <= 0, write weight_kg: 0 in the JSON.
 
-[MANUÁLNÍ WARMUP PROTOKOL A ABSORPCE ŠABLONY - ŽELEZNÉ PRAVIDLO]
-- Pokud vstupní JSON (KOSTRA) obsahuje u cviku sety typu warmup, tvůj výstup musí obsahovat MINIMÁLNĚ stejný počet warmup setů. WARMUPY JSOU POVINNÉ.
-- Smazání existujícího warmup setu je považováno za kritické selhání bezpečnosti. Tyto sety nikdy neodstraňuj.
-- Pouze k nim dopočítej adekvátní váhu a opakování. Pokud je v KOSTŘE méně warmupů, než vyžaduje bezpečnostní protokol pro těžké cviky, přidej další, ale ty původní zachovej.
-- Váha v rozcvičce musí stoupat progresivně (např. 50%, 70%, 85% z cílové PRACOVNÍ váhy, nikoliv z 1RM!) se snižujícím se počtem opakování. U cviků s vlastní vahou zapiš weight_kg: 0.
+[WARMUP PROTOCOL AND TEMPLATE ABSORPTION - IRON RULE]
+- If the input JSON (TEMPLATE) contains warmup-type sets for an exercise, your output MUST contain AT LEAST the same number of warmup sets. WARMUPS ARE MANDATORY.
+- Deleting an existing warmup set is considered a critical safety failure. Never remove these sets.
+- Only calculate appropriate weight and reps for them. If the TEMPLATE has fewer warmups than the safety protocol requires for heavy exercises, add more, but always preserve the originals.
+- Warmup weights must increase progressively (e.g. 50%, 70%, 85% of target WORKING weight, not 1RM!) with decreasing rep counts. For bodyweight exercises, write weight_kg: 0.

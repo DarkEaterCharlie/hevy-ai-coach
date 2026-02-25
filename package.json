@@ -1,7 +1,7 @@
 {
   "name": "hevy-ai-coach",
   "version": "4.1.0",
-  "description": "AI tréninkový asistent pro Hevy aplikaci",
+  "description": "AI training assistant for the Hevy fitness app",
   "main": "coach.js",
   "scripts": {
     "start": "node coach.js",

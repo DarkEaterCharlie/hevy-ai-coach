@@ -6,105 +6,104 @@ const path = require('path');
 const DB_PATH = path.join(__dirname, '../config/user_db.json');
 
 // ==========================================
-// 🛠️ POMOCNÉ FUNKCE
+// HELPERS
 // ==========================================
 function askQuestion(query, rl) {
     return new Promise(resolve => rl.question(query, resolve));
 }
 
 // ==========================================
-// 🔑 KROK 0: NASTAVENÍ API KLÍČŮ (.env)
+// STEP 0: SET UP API KEYS (.env)
 // ==========================================
 async function setupEnvFile(rl) {
     const envPath = path.join(__dirname, '../.env');
-    
+
     if (fs.existsSync(envPath)) {
         return;
     }
 
-    console.log("\n🔑 --- Nastavení API Klíčů ---");
-    console.log("Soubor .env nebyl nalezen. Budu od tebe potřebovat klíče:");
-    
-    const hevyKey = await askQuestion("👉 Vlož svůj HEVY_API_KEY: ", rl);
-    const geminiKey = await askQuestion("👉 Vlož svůj GOOGLE_GENAI_API_KEY: ", rl);
+    console.log("\n🔑 --- API Key Setup ---");
+    console.log(".env file not found. Please provide your API keys:");
+
+    const hevyKey = await askQuestion("👉 Enter your HEVY_API_KEY: ", rl);
+    const geminiKey = await askQuestion("👉 Enter your GOOGLE_GENAI_API_KEY: ", rl);
 
     const envContent = `HEVY_API_KEY=${hevyKey.trim()}\nGOOGLE_GENAI_API_KEY=${geminiKey.trim()}`;
-    
+
     fs.writeFileSync(envPath, envContent);
-    console.log("✅ Soubor .env byl vytvořen.");
+    console.log("✅ .env file created.");
     require('dotenv').config();
 }
 
 // ==========================================
-// 👤 KROK 1: DOTAZNÍK PROFILU
+// STEP 1: ATHLETE PROFILE QUESTIONNAIRE
 // ==========================================
 async function gatherUserProfile(rl) {
-    console.log("\n👤 --- Osobní Profil ---");
-    const age = await askQuestion("1️⃣ Kolik ti je let? ", rl);
-    const gender = await askQuestion("2️⃣ Jaké je tvé pohlaví? ", rl);
-    const bodyweight = await askQuestion("3️⃣ Kolik aktuálně vážíš (kg)? ", rl);
-    const injuries = await askQuestion("4️⃣ Máš nějaká zranění? (Enter pro žádná): ", rl);
-    const otherSports = await askQuestion("5️⃣ Děláš další sporty? (Enter pro nic): ", rl);
-    const currentPhase = await askQuestion("6️⃣ Tvůj aktuální cíl (např. Strength)? ", rl);
+    console.log("\n👤 --- Athlete Profile ---");
+    const age = await askQuestion("1️⃣ How old are you? ", rl);
+    const gender = await askQuestion("2️⃣ What is your gender? ", rl);
+    const bodyweight = await askQuestion("3️⃣ What is your current bodyweight (kg)? ", rl);
+    const injuries = await askQuestion("4️⃣ Any injuries or limitations? (Press Enter for none): ", rl);
+    const otherSports = await askQuestion("5️⃣ Do you do other sports? (Press Enter for none): ", rl);
+    const currentPhase = await askQuestion("6️⃣ Your current training goal (e.g. Strength, Hypertrophy): ", rl);
 
     return {
         age: Number(age) || 30,
-        gender: gender.trim() || "muž",
+        gender: gender.trim() || "male",
         bodyweight: Number(bodyweight) || 85,
-        otherSports: otherSports.trim() || "nic",
-        injuries: injuries.trim() || "žádná",
+        otherSports: otherSports.trim() || "none",
+        injuries: injuries.trim() || "none",
         currentPhase: currentPhase.trim() || "Hypertrophy"
     };
 }
 
 // ==========================================
-// 📁 KROK 2: VÝBĚR SLOŽKY Z HEVY
+// STEP 2: SELECT TARGET FOLDER IN HEVY
 // ==========================================
- async function selectTargetFolder(apiKey, rl) {
-    console.log("\n📂 [Hevy API] Načítám seznam tvých složek...");
+async function selectTargetFolder(apiKey, rl) {
+    console.log("\n📂 [Hevy API] Loading your folders...");
     try {
         const response = await fetch('https://api.hevyapp.com/v1/routine_folders', {
             headers: { 'api-key': apiKey }
         });
-        
+
         if (!response.ok) {
-            console.log(`⚠️ Chyba API: ${response.status}. Klíč asi není správný.`);
+            console.log(`⚠️ API error: ${response.status}. Check your API key.`);
             return "";
         }
 
         const data = await response.json();
-        // Hevy API vrací složky v poli 'routine_folders'
         const folderList = data.routine_folders || [];
 
         if (folderList.length === 0) {
-            console.log("⚠️ V Hevy účtu nebyly nalezeny žádné složky.");
+            console.log("⚠️ No folders found in your Hevy account.");
             return "";
         }
 
-        console.log("Nalezené složky:");
+        console.log("Available folders:");
         folderList.forEach((f, i) => {
             console.log(`  [${i + 1}] ${f.title || f.name}`);
         });
-        
-        const choice = await askQuestion(`\n7️⃣ Vyber číslo složky, kam mám ukládat (1-${folderList.length}): `, rl);
+
+        const choice = await askQuestion(`\n7️⃣ Select the folder number to use (1-${folderList.length}): `, rl);
         const selected = folderList[parseInt(choice) - 1];
-        
+
         if (selected) {
-            console.log(`✅ Vybrána složka: ${selected.title || selected.name}`);
+            console.log(`✅ Selected folder: ${selected.title || selected.name}`);
             return String(selected.id).trim();
         }
         return "";
     } catch (e) {
-        console.log("❌ Chyba při komunikaci s Hevy:", e.message);
+        console.log("❌ Error communicating with Hevy:", e.message);
         return "";
     }
 }
 
 // ==========================================
-// ⛏️ KROK 3: DOLOVÁNÍ MAXIMÁLEK (1RM)
+// STEP 3: MINE HISTORICAL 1RM DATA
 // ==========================================
 async function mineHistorical1RM(apiKey) {
-    console.log("\n⛏️ Doluji tvou historii pro výpočet 1RM...");
+    console.log("\n⛏️ Mining workout history to estimate 1RM values...");
     const calculated1RM = {};
     try {
         for (let page = 1; page <= 10; page++) {
@@ -133,7 +132,7 @@ async function mineHistorical1RM(apiKey) {
 }
 
 // ==========================================
-// 🚀 START
+// MAIN ENTRY POINT
 // ==========================================
 async function runOnboarding() {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -149,13 +148,13 @@ async function runOnboarding() {
         const initialDB = {
             profile: { ...userProfile },
             config: { currentWeek: 1, targetFolderId: folderId },
-            plan: { currentPhase: userProfile.currentPhase, currentRules: "Fokus na progres." },
+            plan: { currentPhase: userProfile.currentPhase, currentRules: "Focus on progression." },
             user1RM
         };
 
         if (!fs.existsSync(path.join(__dirname, '../config'))) fs.mkdirSync(path.join(__dirname, '../config'));
         fs.writeFileSync(DB_PATH, JSON.stringify(initialDB, null, 2));
-        console.log("\n🎉 Hotovo! 'user_db.json' vytvořen.");
+        console.log("\n🎉 Done! user_db.json created successfully.");
     } finally {
         rl.close();
     }

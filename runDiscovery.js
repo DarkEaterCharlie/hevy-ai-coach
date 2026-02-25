@@ -1,39 +1,35 @@
 require("dotenv").config();
 const { downloadExerciseDatabase } = require("./utils/sync_templates");
 const { getNewExercises } = require("./services/comparisonService");
-const {
-  discoverExerciseRelationships,
-} = require("./services/discoveryService");
+const { discoverExerciseRelationships } = require("./services/discoveryService");
 
 async function run() {
-  try {
-    console.log("🚀 [v2.0] START: Aktualizace a Discovery...");
+    try {
+        console.log("🚀 [v2.0] START: Updating exercise catalog and running discovery...");
 
-    // 1. Stáhni čerstvá data
-    await downloadExerciseDatabase();
+        // 1. Download fresh exercise data from Hevy
+        await downloadExerciseDatabase();
 
-    // 2. Najdi rozdíly
-    const newExercises = getNewExercises();
+        // 2. Find new exercises not yet in the Smart Catalog
+        const newExercises = getNewExercises();
 
-    if (newExercises.length === 0) {
-      console.log("✨ Žádné nové cviky k analýze. Smart Catalog je aktuální.");
-      return;
+        if (newExercises.length === 0) {
+            console.log("✨ No new exercises found. Smart Catalog is up to date.");
+            return;
+        }
+
+        console.log(`🔍 Found ${newExercises.length} new exercises. Running AI analysis...`);
+
+        // 3. Send only the new exercises to Gemini for analysis
+        await discoverExerciseRelationships(
+            process.env.GOOGLE_GENAI_API_KEY,
+            newExercises,
+        );
+
+        console.log("🎯 Discovery complete. Smart Catalog updated.");
+    } catch (err) {
+        console.error("🧨 CRITICAL ERROR:", err.message);
     }
-
-    console.log(
-      `🔍 Nalezeno ${newExercises.length} nových cviků. Spouštím AI analýzu...`,
-    );
-
-    // 3. Pošli jen novinky do Gemini (discoveryService.js, který už máš)'
-    await discoverExerciseRelationships(
-      process.env.GEMINI_API_KEY,
-      newExercises,
-    );
-
-    console.log("🎯 Mise splněna. Tvůj Smart Catalog je v kondici!");
-  } catch (err) {
-    console.error("🧨 KRITICKÁ CHYBA:", err.message);
-  }
 }
 
 run();

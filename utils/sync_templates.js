@@ -1,12 +1,11 @@
-// Upravený utils/sync_templates.js
 require('dotenv').config();
 const fs = require('fs');
 
 async function downloadExerciseDatabase() {
     const apiKey = process.env.HEVY_API_KEY;
-    if (!apiKey) throw new Error("Chybí HEVY_API_KEY!");
+    if (!apiKey) throw new Error("Missing HEVY_API_KEY!");
 
-    console.log("📥 Stahuji aktuální katalog z Hevy...");
+    console.log("📥 Downloading exercise catalog from Hevy...");
     let page = 1;
     let allTemplates = [];
     let keepFetching = true;
@@ -30,7 +29,7 @@ async function downloadExerciseDatabase() {
 
     const filePath = './templates_db.json';
     fs.writeFileSync(filePath, JSON.stringify(allTemplates, null, 2));
-    console.log(`✅ Katalog uložen (${allTemplates.length} cviků).`);
+    console.log(`✅ Exercise catalog saved (${allTemplates.length} exercises).`);
     return allTemplates;
 }
 

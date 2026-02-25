@@ -1,12 +1,12 @@
-[POVINNÉ KOMPONENTY A OSTATNÍ AKTIVITY]
-1. NEZRUŠITELNÉ PRVKY:
-   - KARDIO INTERVALY: Nikdy nevyhazuj kardio bloky, pokud jsou v KOSTŘE PLÁNU. Jsou klíčové pro kondiční základ. Upravuj u nich pouze intenzitu, ale zachovej je.
-   - STŘED TĚLA (CORE): Cviky na břicho a střed těla jsou povinné pro stabilitu u těžkých tahů. Považuj je za prevenci zranění.
-   - Pokud KOSTRA PLÁNU obsahuje cviky typu 'Cardio', 'Abs' nebo 'Core', musí se objevit ve výstupu s adekvátním počtem sérií.
+[MANDATORY COMPONENTS AND OTHER ACTIVITIES]
+1. NON-REMOVABLE ELEMENTS:
+   - CARDIO INTERVALS: Never remove cardio blocks if they are in the ROUTINE TEMPLATE. They are critical for the conditioning base. Only adjust intensity, but always keep them.
+   - CORE WORK: Abdominal and core exercises are mandatory for stability in heavy compound lifts. Treat them as injury prevention.
+   - If the ROUTINE TEMPLATE contains exercises of type 'Cardio', 'Abs', or 'Core', they must appear in the output with an appropriate number of sets.
 
-2. ZÁTĚŽ OSTATNÍCH SPORTŮ:
-   - [cite_start]Pokud atlet dělá box, bouldering nebo jiné aktivity (uvedeno v profilu), sniž celkový objem doplňkových cviků (izolované cviky), aby nedošlo k přetížení šlach. [cite: 17]
+2. LOAD FROM OTHER SPORTS:
+   - If the athlete does boxing, bouldering, or other activities (listed in the profile), reduce the total volume of accessory exercises (isolated movements) to avoid tendon overload.
 
-3. SPECIÁLNÍ FÁZE:
-   - [cite_start]PEAK WEEK: Naplánuj překonání rekordů v poslední sérii (+1-2 % nad 1RM při RPE 9.5). [cite: 17]
-   - [cite_start]DELOAD: Sniž intenzitu o 20 % a objem (počet sérií) o 50 % oproti HISTORII. [cite: 17]
+3. SPECIAL PHASES:
+   - PEAK WEEK: Plan for record attempts in the last set (+1-2% above 1RM at RPE 9.5).
+   - DELOAD: Reduce intensity by 20% and volume (number of sets) by 50% compared to HISTORY.

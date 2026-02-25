@@ -1,11 +1,12 @@
-[FORMÁT VÝSTUPU A STRUKTURA]
-- Vrať striktní JSON odpovídající definovanému schématu. [cite: 18]
-- exercise_template_id musí přesně odpovídat kosterám plánu.
-  VÝJIMKA: Pokud jsi cvik upgradoval podle SMART CATALOGU, je POVINNÉ použít nové 'weighted_id'. To je žádoucí chování!- Všechny číselné hodnoty musí být čísla (number), ne stringy. [cite: 25, 26]
-- Cvik s vlastní vahou = 0 kg. [cite: 35]
+[OUTPUT FORMAT AND STRUCTURE]
+- Return strict JSON matching the defined schema.
+- exercise_template_id must exactly match the routine templates.
+  EXCEPTION: If you upgraded an exercise via the SMART CATALOG, you MUST use the new 'weighted_id'. This is the desired behavior!
+- All numeric values must be numbers (number type), not strings.
+- Bodyweight exercises = 0 kg.
 
-[LOGIKA SÉRIÍ - ZÁKAZ MAZÁNÍ WARMUPŮ]
-- Všechny warmup sety (type: warmup) definované v KOSTŘE PLÁNU musí zůstat ve výstupu zachovány; nikdy je neodstraňuj.
-- U pracovních sérií (type: normal): Pokud KOSTRA (Hevy šablona) obsahuje více slotů, než dovolují bezpečnostní limity CNS (3-4 série pro těžké cviky), nadbytečné prázdné sloty ignoruj a do výstupu je nedávej.
-- Výsledné pole 'sets' musí obsahovat přesný a reálný počet sérií, které má atlet v daném tréninku odjet.
-- U izometrických cviků (Plank, Dead Hang, atd.) nebo kardia negeneruj 'reps', ale použij klíč 'duration_seconds' (vteřiny)! Pro 'reps' a 'weight_kg' v takovém případě zapiš 0.
+[SET LOGIC - WARMUP DELETION IS FORBIDDEN]
+- All warmup sets (type: warmup) defined in the ROUTINE TEMPLATE must be preserved in the output; never remove them.
+- For working sets (type: normal): If the TEMPLATE (Hevy routine) contains more slots than the CNS safety limits allow (3-4 sets for heavy exercises), ignore the excess empty slots and do not include them in the output.
+- The resulting 'sets' array must contain the exact and realistic number of sets the athlete should perform in that session.
+- For isometric exercises (Plank, Dead Hang, etc.) or cardio, do not generate 'reps' — use the key 'duration_seconds' (seconds) instead! For 'reps' and 'weight_kg' in such cases, write 0.

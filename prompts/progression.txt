@@ -1,19 +1,19 @@
-[LOGIKA PROGRESE A POVYŠOVÁNÍ CVIKŮ - KRITICKÁ PRIORITA]
-Máš k dispozici [SMART CATALOG]. Tento katalog mapuje cviky s vlastní vahou (bodyweight_id) na jejich varianty se zátěží (weighted_id).
+[EXERCISE PROGRESSION LOGIC AND UPGRADE - CRITICAL PRIORITY]
+You have access to the [SMART CATALOG]. This catalog maps bodyweight exercises (bodyweight_id) to their weighted variants (weighted_id).
 
-TVŮJ ÚKOL PŘI GENEROVÁNÍ:
-1. Zkontroluj každý cvik ze šablony (routine).
-2. Pokud je jeho 'hevy_id' uvedeno ve SMART CATALOGU jako 'bodyweight_id', podívej se do HISTORIE.
-3. Pokud atlet v historii dosáhl počtu opakování, který je VĚTŠÍ NEBO ROVEN 'threshold_reps' v katalogu, ZNAMENÁ TO, ŽE JE CVIK LEHKÝ.
-4. V takovém případě JE TVOU POVINNOSTÍ VYŠKRTNOUT původní ID a do výstupu (exercise_template_id) VLOŽIT NOVÉ 'weighted_id' z katalogu!
-5. Do 'notes' k tomuto cviku přidej text: "🔥 UPGRADE: Přecházíme na zátěž!"
-6. Vypočítej váhu 'weight_kg' jako (E-1RM - aktuální váha atleta z profilu). Pokud vyjde <= 0, dej 2.5 kg.
+YOUR TASK DURING PLAN GENERATION:
+1. Check every exercise in the routine template.
+2. If its 'hevy_id' appears in the SMART CATALOG as a 'bodyweight_id', look at the HISTORY.
+3. If the athlete has achieved a rep count GREATER THAN OR EQUAL TO 'threshold_reps' in the catalog, this means THE EXERCISE IS TOO EASY.
+4. In that case, IT IS YOUR OBLIGATION to replace the original ID and insert the new 'weighted_id' from the catalog into the output (exercise_template_id)!
+5. Add the following text to the exercise 'notes': "🔥 UPGRADE: Moving to weighted version!"
+6. Calculate weight_kg as (E-1RM - athlete's current bodyweight from profile). If the result is <= 0, use 2.5 kg.
 
-TOTO PRAVIDLO PŘEBÍJÍ VŠECHNA OSTATNÍ PRAVIDLA O ZACHOVÁNÍ PŮVODNÍHO ID!
+THIS RULE OVERRIDES ALL OTHER RULES ABOUT PRESERVING THE ORIGINAL ID!
 
-2. AUTOMATICKÝ UPGRADE:
-   - V takovém případě ignoruj původní "bodyweight_id" z KOSTRY a nahraď jej odpovídajícím "weighted_id" ze SMART_CATALOGU.
-   - Do poznámky (notes) k danému cviku napiš: "Gratuluji k progrese! Přecházíme na weighted variantu."
+2. AUTOMATIC UPGRADE:
+   - In this case, ignore the original "bodyweight_id" from the TEMPLATE and replace it with the matching "weighted_id" from the SMART CATALOG.
+   - Add the following to the exercise notes: "Congrats on the progression! Switching to weighted variant."
 
-3. VÝPOČET VÁHY PO UPGRADU:
-   - První pracovní váha u weighted varianty by měla odpovídat E-1RM z bodyweight verze minus tělesná váha (bodyweight) atleta, s cíleným RPE dle aktuální fáze.
+3. WEIGHT CALCULATION AFTER UPGRADE:
+   - The first working weight for the weighted variant should correspond to the E-1RM from the bodyweight version minus the athlete's bodyweight, targeting the RPE of the current phase.

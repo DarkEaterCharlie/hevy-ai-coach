@@ -2,13 +2,13 @@ const { GoogleGenerativeAI, SchemaType } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 
-// Pomocník pro načítání promptů
+// Helper to load prompt files
 const loadPrompt = (fileName) => {
     try {
         const filePath = path.join(__dirname, '..', 'prompts', fileName);
         return fs.readFileSync(filePath, 'utf8');
     } catch (err) {
-        console.warn(`⚠️ Varování: Soubor prompts/${fileName} nenalezen, pokračuji bez něj.`);
+        console.warn(`⚠️ Warning: prompts/${fileName} not found, skipping.`);
         return "";
     }
 };
@@ -16,13 +16,13 @@ const loadPrompt = (fileName) => {
 const responseSchema = {
     type: SchemaType.OBJECT,
     properties: {
-        zprava_od_kouce: { type: SchemaType.STRING },
-        tydenni_plan: {
+        coach_message: { type: SchemaType.STRING },
+        weekly_plan: {
             type: SchemaType.ARRAY,
             items: {
                 type: SchemaType.OBJECT,
                 properties: {
-                    nazev_treninku: { type: SchemaType.STRING },
+                    workout_name: { type: SchemaType.STRING },
                     notes: { type: SchemaType.STRING },
                     exercises: {
                         type: SchemaType.ARRAY,
@@ -40,7 +40,8 @@ const responseSchema = {
                                         properties: {
                                             type: { type: SchemaType.STRING },
                                             weight_kg: { type: SchemaType.NUMBER },
-                                            reps: { type: SchemaType.NUMBER },duration_seconds: { type: SchemaType.NUMBER },
+                                            reps: { type: SchemaType.NUMBER },
+                                            duration_seconds: { type: SchemaType.NUMBER },
                                             rpe: { type: SchemaType.NUMBER }
                                         },
                                         required: ["type", "weight_kg", "reps"]
@@ -51,63 +52,59 @@ const responseSchema = {
                         }
                     }
                 },
-                required: ["nazev_treninku", "exercises"]
+                required: ["workout_name", "exercises"]
             }
         }
     },
-    required: ["zprava_od_kouce", "tydenni_plan"]
+    required: ["coach_message", "weekly_plan"]
 };
 
 async function generateTrainingPlan(data) {
-    // 1. OPRAVA: Název klíče musí odpovídat tvému .env (GOOGLE_GENAI_API_KEY)
     const apiKey = process.env.GOOGLE_GENAI_API_KEY;
     if (!apiKey) {
         throw new Error("❌ Missing GOOGLE_GENAI_API_KEY in .env file");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // 2. OPRAVA: Model (použijeme aktuální flash, je bleskový a chytrý)
+
     const model = genAI.getGenerativeModel({
         model: "gemini-2.5-pro",
         generationConfig: {
             responseMimeType: "application/json",
             responseSchema,
-            temperature: 0.2 // Trošku víc kreativity pro 'zpravu_od_kouce'
+            temperature: 0.2 // Low temperature for consistent, precise output
         }
     });
 
-    // 3. SESTAVENÍ PROMPTU (Mapování na tvou novou DB strukturu)
     const prompt = `
         ${loadPrompt('role.txt')}
-        
-      [STRATEGIE CYKLU - TÝDEN ${data.currentWeek || '1'}/12]
-              - Fáze: ${data.periodization?.phase || 'Stabilizace'}
-              - Intenzita: ${data.periodization?.intensity || 'Střední'}
-              - Cílové RPE: ${data.periodization?.rpeTarget || 8}
-              - Procento z 1RM: ${((data.periodization?.volumeWeight || 0.75) * 100).toFixed(0)}%
-              - Poznámka k týdnu: ${data.periodization?.note || 'Standardní progres'}
 
-        [PROFIL ATLETA]
-        - Věk: ${data.age} let
-        - Pohlaví: ${data.gender}
-        - Aktuální váha: ${data.bodyweight} kg
-        - Ostatní sporty: ${data.otherSports}
-        - Zranění/Omezení: ${data.injuries}
-        - Aktuální zaměření: ${data.currentPhase}
+        [TRAINING CYCLE STRATEGY - WEEK ${data.currentWeek || '1'}/12]
+        - Phase: ${data.periodization?.phase || 'Stabilization'}
+        - Intensity: ${data.periodization?.intensity || 'Moderate'}
+        - Target RPE: ${data.periodization?.rpeTarget || 8}
+        - Percentage of 1RM: ${((data.periodization?.volumeWeight || 0.75) * 100).toFixed(0)}%
+        - Week note: ${data.periodization?.note || 'Standard progression'}
 
+        [ATHLETE PROFILE]
+        - Age: ${data.age} years
+        - Gender: ${data.gender}
+        - Current bodyweight: ${data.bodyweight} kg
+        - Other sports: ${data.otherSports}
+        - Injuries / Limitations: ${data.injuries}
+        - Current focus: ${data.currentPhase}
 
         ${loadPrompt('safety.txt')}
         ${loadPrompt('components.txt')}
         ${loadPrompt('progression.txt')}
-    
-        [SMART CATALOG - RODINY CVIKŮ A LIMITY OPAKOVÁNÍ]
+
+        [SMART CATALOG - EXERCISE FAMILIES AND REP THRESHOLDS]
         ${JSON.stringify(data.smartCatalog)}
-    
-        [TVÁ PRACOVNÍ PLOCHA - ŠABLONY]
+
+        [YOUR WORKSPACE - ROUTINE TEMPLATES]
         ${JSON.stringify(data.routines)}
 
-        [HISTORIE POSLEDNÍCH TRÉNINKŮ]
+        [RECENT WORKOUT HISTORY]
         ${JSON.stringify(data.history)}
 
         ${loadPrompt('output.txt')}
@@ -117,7 +114,7 @@ async function generateTrainingPlan(data) {
         const result = await model.generateContent(prompt);
         return JSON.parse(result.response.text());
     } catch (e) {
-        console.error("❌ Kritická chyba AI generování:", e);
+        console.error("❌ Critical AI generation error:", e);
         throw e;
     }
 }
