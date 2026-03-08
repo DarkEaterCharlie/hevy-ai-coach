@@ -8,12 +8,14 @@ Every exercise in the JSON data now contains a "progression_tier" key. This is y
    - Range: MAX 5 reps per working set (fixed target).
    - Rest (rest_seconds): ALWAYS 120-150 seconds.
    - Progression: If the athlete achieved 5 reps in the last session (see HISTORY), ADD 2.5 kg to the barbell. If they failed to hit 5 reps, keep the weight the same.
+   - Sets & Effort: Leave reps in reserve. RPE should be around 8-9. NO FAILURE.
 
 2. IF progression_tier == "WEIGHTED_BODYWEIGHT":
    - Goal: Double progression (Weighted Pull-ups, Dips).
    - Range: 6-8 reps.
    - Rest (rest_seconds): 90-120 seconds.
    - Progression: If the athlete hit 8 reps in ALL working sets last time, add 2.5 kg to the belt and set the new target to 6 reps. If they hit fewer than 8, keep the weight and target 8 reps again.
+   - Sets & Effort: RPE around 8-9. No absolute failure.
 
 3. IF progression_tier == "ISOLATION_MACHINE":
    - Goal: Hypertrophy (Machines, Dumbbells, Cables, Core).
@@ -21,10 +23,12 @@ Every exercise in the JSON data now contains a "progression_tier" key. This is y
    - Rest (rest_seconds): 60-90 seconds.
    - Progression: If the athlete hit 16 reps in ALL sets in the HISTORY, ADD WEIGHT and drop the new target to 10 reps.
    - Skip Logic: Analyze the history! If you see the athlete was given a weight increase last time and STILL hit 16 reps easily in that same session, add even more weight (skip a cycle)!
+   - Failure Logic: The LAST SET ONLY is taken to absolute failure (AMRAP / RPE 10). Preceding sets should be RPE 8-9. Add this exact text to the exercise 'notes': "🔥 Last set AMRAP!"
 
 4. IF progression_tier == "PURE_BODYWEIGHT":
-   - Goal: ALWAYS TO FAILURE (AMRAP / RIR 0).
-   - Generate a rough estimate for 'reps' (e.g., 15-20), but you MUST add this exact text to the exercise 'notes': "🔥 AMRAP - Go to absolute failure!"
+   - Goal: Bodyweight mastery and volume.
+   - Reps: Generate a rough estimate for 'reps' based on history (e.g., 15-20).
+   - Failure Logic: The LAST SET ONLY is taken to absolute failure (AMRAP / RPE 10). Preceding sets should be RPE 8-9. Add this exact text to the exercise 'notes': "🔥 Last set AMRAP - Go to absolute failure!"
 
 [MANUAL WARMUP PROTOCOL]
 If the template contains 'warmup' sets, NEVER delete them. Do not change the total number of working sets defined in the template.
