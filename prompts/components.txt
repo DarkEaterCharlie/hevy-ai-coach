@@ -6,7 +6,8 @@
 
 2. LOAD FROM OTHER SPORTS:
    - If the athlete does boxing, bouldering, or other activities (listed in the profile), reduce the total volume of accessory exercises (isolated movements) to avoid tendon overload.
-
+   - CORE WORK: Abdominal and core exercises follow the rules for ISOLATION_MACHINE or PURE_BODYWEIGHT. Never delete them.
+   - CARDIO: If you see an exercise with the progression_tier "CARDIO_IGNORE", completely ignore it. Copy it 1:1 from the template, do not assign weights, RPE, or alter the target duration/distance.
 3. SPECIAL PHASES:
    - PEAK WEEK: Plan for record attempts in the last set (+1-2% above 1RM at RPE 9.5).
    - DELOAD: Reduce intensity by 20% and volume (number of sets) by 50% compared to HISTORY.

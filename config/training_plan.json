@@ -1,17 +1,31 @@
 {
-  "planName": "12-Week Power & Hypertrophy (Variant C)",
+  "planName": "8-Week Linear Powerbuilding",
   "weeks": {
-    "1": { "phase": "Accumulation", "intensity": "Low", "rpeTarget": 7, "volumeWeight": 0.70 },
-    "2": { "phase": "Accumulation", "intensity": "Medium", "rpeTarget": 7.5, "volumeWeight": 0.73 },
-    "3": { "phase": "Accumulation", "intensity": "High", "rpeTarget": 8, "volumeWeight": 0.75 },
-    "4": { "phase": "Deload", "intensity": "Very Low", "rpeTarget": 5, "volumeWeight": 0.50, "note": "Focus on technique, cut sets by 1" },
-    "5": { "phase": "Intensification", "intensity": "Medium", "rpeTarget": 8, "volumeWeight": 0.78 },
-    "6": { "phase": "Intensification", "intensity": "High", "rpeTarget": 8.5, "volumeWeight": 0.82 },
-    "7": { "phase": "Intensification", "intensity": "Very High", "rpeTarget": 9, "volumeWeight": 0.85 },
-    "8": { "phase": "Deload", "intensity": "Very Low", "rpeTarget": 5, "volumeWeight": 0.50 },
-    "9": { "phase": "Peaking", "intensity": "High", "rpeTarget": 9, "volumeWeight": 0.88 },
-    "10": { "phase": "Peaking", "intensity": "Very High", "rpeTarget": 9.5, "volumeWeight": 0.92 },
-    "11": { "phase": "Max Effort", "intensity": "Extreme", "rpeTarget": 10, "volumeWeight": 0.95 },
-    "12": { "phase": "Full Recovery", "intensity": "Minimal", "rpeTarget": 4, "volumeWeight": 0.40, "note": "Active recovery only, no heavy lifting" }
+    "1": {
+      "phase": "Week 1",
+      "note": "Starting the 8-week block. Don't overshoot, focus on strict form for the 5x5."
+    },
+    "2": {
+      "phase": "Week 2",
+      "note": "Adding weight on barbell lifts. Push machines towards 16 reps."
+    },
+    "3": {
+      "phase": "Week 3",
+      "note": "Linear progression continues. If you hit 16 on machines, up the weight and drop the target to 10."
+    },
+    "4": { "phase": "Week 4", "note": "Halfway through. Keep pushing hard." },
+    "5": {
+      "phase": "Week 5",
+      "note": "It's getting heavy now. Stick to the rules and rest adequately."
+    },
+    "6": {
+      "phase": "Week 6",
+      "note": "Don't give up, keep your technique strict on heavy pulls and pushes."
+    },
+    "7": { "phase": "Week 7", "note": "Final push before the limit." },
+    "8": {
+      "phase": "Week 8 (Peak)",
+      "note": "Peak week! Give it everything, let's see where the linear progression stops."
+    }
   }
 }

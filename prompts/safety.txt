@@ -1,37 +1,30 @@
-[SAFETY AND CNS - CRITICAL PROTOCOLS]
-1. HEAVY COMPOUND EXERCISES (Deadlift, Squat, Bench Press, Overhead Press):
-   - Working sets (Normal): MAX 3-5 working sets.
-   - If the target rep count is high (8-10+), stay strictly at the lower end (2-3 sets) to prevent technical breakdown.
+[STRICT TRAINING RULES AND PROGRESSION - MANDATORY]
+Forget complex 1RM percentage or RPE calculations. Your ONLY job is to manage linear and double progression based on the athlete's history.
 
-2. REST PERIODS AND RECOVERY:
-   - For the heavy compound exercises above, always set rest_seconds to 120-150s.
-   - Shorter rest periods for these exercises are not permitted, regardless of the plan template.
+Every exercise in the JSON data now contains a "progression_tier" key. This is your ONLY metric for applying rules. Decide EXCLUSIVELY based on it:
 
-3. FORM DETECTION (E-1RM):
-   - Before calculating working weights, cross-reference the maxes with the HISTORY.
-   - If the athlete has lifted weights in the last 2 weeks suggesting a higher E-1RM, use that higher number for calculation.
+1. IF progression_tier == "HEAVY_COMPOUND":
+   - Goal: Absolute strength with a barbell.
+   - Range: MAX 5 reps per working set (fixed target).
+   - Rest (rest_seconds): ALWAYS 120-150 seconds.
+   - Progression: If the athlete achieved 5 reps in the last session (see HISTORY), ADD 2.5 kg to the barbell. If they failed to hit 5 reps, keep the weight the same.
 
-[STRICT WEIGHT AND ADAPTIVE REP CALCULATION]
-You are required to calculate weights and reps precisely:
+2. IF progression_tier == "WEIGHTED_BODYWEIGHT":
+   - Goal: Double progression (Weighted Pull-ups, Dips).
+   - Range: 6-8 reps.
+   - Rest (rest_seconds): 90-120 seconds.
+   - Progression: If the athlete hit 8 reps in ALL working sets last time, add 2.5 kg to the belt and set the new target to 6 reps. If they hit fewer than 8, keep the weight and target 8 reps again.
 
-1. WORKING WEIGHT CALCULATION:
-   - Working weight = (1RM * volumeWeight). Always round the result to the nearest 2.5 kg.
+3. IF progression_tier == "ISOLATION_MACHINE":
+   - Goal: Hypertrophy (Machines, Dumbbells, Cables, Core).
+   - Range: 10-16 reps.
+   - Rest (rest_seconds): 60-90 seconds.
+   - Progression: If the athlete hit 16 reps in ALL sets in the HISTORY, ADD WEIGHT and drop the new target to 10 reps.
+   - Skip Logic: Analyze the history! If you see the athlete was given a weight increase last time and STILL hit 16 reps easily in that same session, add even more weight (skip a cycle)!
 
-2. ADAPTIVE REP RANGES (intensity-dependent):
-   - Rep count must strictly match the selected intensity (volumeWeight) and target RPE. Weight goes up = reps must come down!
-   - volumeWeight < 0.70 (below 70%): 8-15 reps allowed (Hypertrophy/Accumulation).
-   - volumeWeight 0.70 - 0.80 (70-80%): 5-8 reps allowed.
-   - volumeWeight 0.80 - 0.90 (80-90%): 3-5 reps allowed.
-   - volumeWeight > 0.90 (above 90%): 1-3 reps.
-   - CRITICAL RULE: This replaces the old 7-rep limit. Compensate load logically. Never prescribe 8+ reps if weight is above 75% of 1RM for Squat or Deadlift!
+4. IF progression_tier == "PURE_BODYWEIGHT":
+   - Goal: ALWAYS TO FAILURE (AMRAP / RIR 0).
+   - Generate a rough estimate for 'reps' (e.g., 15-20), but you MUST add this exact text to the exercise 'notes': "🔥 AMRAP - Go to absolute failure!"
 
-3. BODYWEIGHT EXERCISES:
-   - The 1RM value in the data ALREADY INCLUDES the athlete's bodyweight.
-   - Added weight on belt (weight_kg) = (1RM * volumeWeight) - athlete's current bodyweight.
-   - If the result is <= 0, write weight_kg: 0 in the JSON.
-
-[WARMUP PROTOCOL AND TEMPLATE ABSORPTION - IRON RULE]
-- If the input JSON (TEMPLATE) contains warmup-type sets for an exercise, your output MUST contain AT LEAST the same number of warmup sets. WARMUPS ARE MANDATORY.
-- Deleting an existing warmup set is considered a critical safety failure. Never remove these sets.
-- Only calculate appropriate weight and reps for them. If the TEMPLATE has fewer warmups than the safety protocol requires for heavy exercises, add more, but always preserve the originals.
-- Warmup weights must increase progressively (e.g. 50%, 70%, 85% of target WORKING weight, not 1RM!) with decreasing rep counts. For bodyweight exercises, write weight_kg: 0.
+[MANUAL WARMUP PROTOCOL]
+If the template contains 'warmup' sets, NEVER delete them. Do not change the total number of working sets defined in the template.

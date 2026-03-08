@@ -1,97 +1,139 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+const templatesMap = {};
+if (fs.existsSync("./templates_db.json")) {
+  JSON.parse(fs.readFileSync("./templates_db.json", "utf-8")).forEach(
+    (t) => (templatesMap[t.id] = t),
+  );
+}
 
 /**
- * Transforms an AI-generated training plan into Hevy-compatible JSON files,
- * one file per routine, saved to the /exports directory.
+ * Writer Module (v4 Hybrid)
+ * Transforms AI plan into Hevy-ready files.
+ * Ensures: English labels, original exercise order, and superset rest logic.
  */
 async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
-    console.log("📂 [Module: Writer] Clearing old exports and transforming data...");
-    const dir = './exports';
+  console.log(
+    "📂 [Module: Writer] Exporting routines to /exports (English labels)...",
+  );
+  const dir = "./exports";
 
-    if (fs.existsSync(dir)) {
-        fs.rmSync(dir, { recursive: true, force: true });
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(dir);
+
+  // Iterate through original routines to preserve exercise sequence
+  for (const sourceRoutine of originalRoutines) {
+    // Match AI workout by name (using English keys from v4)
+    const aiWorkout = aiPlan.weekly_plan.find(
+      (t) =>
+        t.workout_name.toLowerCase() ===
+        sourceRoutine.routine_name.toLowerCase(),
+    );
+
+    if (!aiWorkout) {
+      console.warn(
+        `⚠️ [Writer] Workout for "${sourceRoutine.routine_name}" not found in AI output.`,
+      );
+      continue;
     }
-    fs.mkdirSync(dir);
 
-    for (const workout of aiPlan.weekly_plan) {
-
-        const sourceRoutine = originalRoutines.find(r =>
-            r.routine_name.toLowerCase() === workout.workout_name.toLowerCase()
+    const normalizedExercises = sourceRoutine.exercises
+      .map((origEx, index) => {
+        const aiEx = aiWorkout.exercises.find(
+          (e) => e.exercise_template_id === origEx.hevy_id,
         );
 
-        if (!sourceRoutine) {
-            console.warn(`⚠️ [Writer] Routine "${workout.workout_name}" not found in Hevy templates.`);
-            continue;
+        if (!aiEx) {
+          console.error(
+            `❌ [Writer] Exercise ${origEx.name} missing from AI output!`,
+          );
+          return null;
         }
 
-        const hevyFormat = {
-            routine: {
-                title: workout.workout_name,
-                notes: aiPlan.coach_message || "",
-                exercises: workout.exercises.map(ex => {
-                    // Look up the original exercise to determine the required warmup count
-                    const originalEx = sourceRoutine.exercises.find(c => c.hevy_id === ex.exercise_template_id);
-                    const requiredWarmups = originalEx ? originalEx.warmup_sets : 0;
+        // --- SUPERSET REST LOGIC ---
+        const nextEx = sourceRoutine.exercises[index + 1];
+        let finalRest = aiEx.rest_seconds || origEx.rest_seconds || 90;
 
-                    // Current sets returned by the AI
-                    let currentSets = [...ex.sets];
-                    const aiWarmupCount = currentSets.filter(s => s.type === 'warmup').length;
+        // Reset rest to 0 if the next exercise belongs to the same superset
+        if (
+          origEx.superset_id !== null &&
+          nextEx &&
+          nextEx.superset_id === origEx.superset_id
+        ) {
+          finalRest = 0;
+        }
 
-                    // --- WARMUP SAFETY GUARD ---
-                    if (aiWarmupCount < requiredWarmups) {
-                        console.warn(`⚠️ [Writer] AI removed warmup for exercise ${ex.exercise_template_id}. Restoring...`);
+        // --- WARMUP SAFETY GUARD ---
+        let currentSets = [...aiEx.sets];
+        const aiWarmupCount = currentSets.filter(
+          (s) => s.type === "warmup",
+        ).length;
+        const templateData = templatesMap[origEx.exercise_template_id];
+        if (templateData && templateData.primary_muscle_group === "cardio") {
+          console.log(
+            `🛡️ [Writer] Detekováno Kardio (${templateData.title}). Ignoruji AI a vracím tvoje nastavení!`,
+          );
+          currentSets = origEx.raw_sets ?? currentSets;
+        }
 
-                        const missingCount = requiredWarmups - aiWarmupCount;
-                        const firstWorkSet = currentSets.find(s => s.type === 'normal') || { weight_kg: 20, reps: 10 };
+        if (aiWarmupCount < origEx.warmup_sets) {
+          const missingCount = origEx.warmup_sets - aiWarmupCount;
+          const firstWorkSet = currentSets.find((s) => s.type === "normal") || {
+            weight_kg: 20,
+            reps: 10,
+          };
+          const emergencyWarmups = [];
+          for (let i = 0; i < missingCount; i++) {
+            emergencyWarmups.push({
+              type: "warmup",
+              weight_kg: Math.round((firstWorkSet.weight_kg * 0.5) / 2.5) * 2.5,
+              reps: firstWorkSet.reps + 2,
+            });
+          }
+          currentSets = [...emergencyWarmups, ...currentSets];
+        }
 
-                        const emergencyWarmups = [];
-                        for (let i = 0; i < missingCount; i++) {
-                            emergencyWarmups.push({
-                                type: 'warmup',
-                                weight_kg: Math.round((firstWorkSet.weight_kg * 0.5) / 2.5) * 2.5,
-                                reps: firstWorkSet.reps + 2
-                            });
-                        }
-                        // Prepend missing warmups
-                        currentSets = [...emergencyWarmups, ...currentSets];
-                    }
-                    // --- END WARMUP SAFETY GUARD ---
+        // --- GENERATE ENGLISH TARGET NOTES ---
+        const rpeNotes = currentSets
+          .filter((s) => s.type === "normal")
+          .map((s, idx) => `S${idx + 1}: RPE ${s.rpe || "?"}`)
+          .join(", ");
 
-                    const rpeNotes = currentSets
-                        .filter(s => s.type === 'normal')
-                        .map((s, idx) => `S${idx + 1}: RPE ${s.rpe || '?'}`)
-                        .join(', ');
+        // Combine AI notes (upgrades, etc.) with RPE targets
+        let exerciseNote = aiEx.notes || "";
+        const targetNote = `Target: ${rpeNotes}`;
 
-                    const exercise = {
-                        exercise_template_id: ex.exercise_template_id,
-                        superset_id: ex.superset_id ?? null,
-                        rest_seconds: ex.rest_seconds || 90,
-                        sets: currentSets.map(s => ({
-                            type: s.type === 'warmup' ? 'warmup' : 'normal',
-                            weight_kg: s.weight_kg || 0,
-                            reps: s.reps || 0,
-                            duration_seconds: s.duration_seconds || null
-                        }))
-                    };
-
-                    const finalNotes = [];
-                    if (ex.notes) finalNotes.push(ex.notes);
-                    if (rpeNotes) finalNotes.push(`Target: ${rpeNotes}`);
-
-                    if (finalNotes.length > 0) {
-                        exercise.notes = finalNotes.join(' | ');
-                    }
-
-                    return exercise;
-                })
-            }
+        return {
+          exercise_template_id: origEx.hevy_id,
+          superset_id: origEx.superset_id,
+          rest_seconds: finalRest,
+          notes: exerciseNote ? `${exerciseNote} | ${targetNote}` : targetNote,
+          sets: currentSets.map((s) => ({
+            type: s.type === "warmup" ? "warmup" : "normal",
+            weight_kg: s.weight_kg || 0,
+            reps: s.reps || 0,
+            duration_seconds: s.duration_seconds || null,
+          })),
         };
+      })
+      .filter((ex) => ex !== null);
 
-        const filePath = path.join(dir, `routine_${sourceRoutine.routine_id}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(hevyFormat, null, 2), 'utf-8');
-        console.log(`✅ [Writer] Generated Hevy file: routine_${sourceRoutine.routine_id}.json`);
-    }
+    const hevyFormat = {
+      routine: {
+        title: sourceRoutine.routine_name,
+        notes: aiPlan.coach_message || "",
+        exercises: normalizedExercises,
+      },
+    };
+
+    const filePath = path.join(dir, `routine_${sourceRoutine.routine_id}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(hevyFormat, null, 2), "utf-8");
+    console.log(
+      `✅ [Writer] File generated: routine_${sourceRoutine.routine_id}.json`,
+    );
+  }
 }
 
 module.exports = { exportPlanToHevyFiles };

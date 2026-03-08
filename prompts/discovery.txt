@@ -1,17 +1,12 @@
-You are an elite biomechanical engineer and strength coach. Analyze this exercise catalog from the Hevy fitness app.
-Your task is to create a COMPLETE family map for exercise progression.
-
 MAPPING RULES:
 1. Find ALL biomechanically identical pairs (Bodyweight -> Weighted).
 2. Also map variants:
     - Classic exercise vs. Weighted variant (Push Up -> Weighted Push Up)
     - Classic exercise vs. Machine variant (Dips -> Seated Dip Machine)
-    - Bodyweight exercise vs. Dumbbell/Barbell variant (Bulgarian Split Squat -> Bulgarian Split Squat Dumbbell)
-3. Also look for matches in Custom exercises (by name).
-4. Set "threshold_reps" realistically (8-12 for heavy exercises, 15-20 for light exercises).
-
-OUTPUT REQUIREMENTS:
-- Include families for: Chest, Back, Legs, Core, Arms, Neck.
-- If a weighted alternative exists, it MUST be in the list.
-
-Return JSON: {"families": [{"name": "Name", "bodyweight_id": "ID", "weighted_id": "ID", "threshold_reps": number}]}
+    - Bodyweight exercise vs. Dumbbell/Barbell variant
+3. Set "threshold_reps" REALISTICALLY based on the difficulty of the bodyweight exercise:
+    - HARD PULLING (Pull Up, Chin Up, Muscle Up): threshold = 8 to 10
+    - MEDIUM PUSHING (Dips, Pike Push Ups): threshold = 12 to 15
+    - EASY PUSHING (Push Up): threshold = 20
+    - LEGS (Squat, Lunge): threshold = 20
+    - CORE (Crunch, Sit Up): threshold = 20
