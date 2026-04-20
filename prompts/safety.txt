@@ -22,7 +22,9 @@ You are required to calculate weights and reps precisely:
    - volumeWeight < 0.70 (below 70%): 8-15 reps allowed (Hypertrophy/Accumulation).
    - volumeWeight 0.70 - 0.80 (70-80%): 5-8 reps allowed.
    - volumeWeight 0.80 - 0.90 (80-90%): 3-5 reps allowed.
+   - volumeWeight = 0.90 (Intensification phase, weeks 5-7): EXACTLY 3 reps for heavy compound exercises (Squat, Deadlift, Bench Press, Overhead Press). No more, no less.
    - volumeWeight > 0.90 (above 90%): 1-3 reps.
+   - PR TESTING PHASE (week 8, volumeWeight = 1.03): EXACTLY 1 rep at the target PR weight for heavy compound exercises. This is a maximum effort single attempt.
    - CRITICAL RULE: This replaces the old 7-rep limit. Compensate load logically. Never prescribe 8+ reps if weight is above 75% of 1RM for Squat or Deadlift!
 
 3. BODYWEIGHT EXERCISES:

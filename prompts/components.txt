@@ -10,3 +10,9 @@
 3. SPECIAL PHASES:
    - PEAK WEEK: Plan for record attempts in the last set (+1-2% above 1RM at RPE 9.5).
    - DELOAD: Reduce intensity by 20% and volume (number of sets) by 50% compared to HISTORY.
+   - PR TESTING (Week 8 — phase "PR Testing"): This is the athlete's maximum effort week after 3 weeks of 90% intensification. For each major compound lift (Squat, Deadlift, Bench Press, Overhead Press):
+     1. TARGET PR CALCULATION: Target PR = round(current_1RM × 1.03) to nearest 2.5 kg. This represents an expected 3% improvement from 3 weeks of heavy triples at 90%.
+     2. Write the target PR explicitly in the exercise notes field, e.g.: "PR TARGET: 107.5 kg — based on 3-week 90% intensification block".
+     3. Program EXACTLY 1 working set at the target PR weight, RPE 10.
+     4. Include full warmup protocol (50% → 70% → 85% → 95% of PR target) before the attempt.
+     5. In the coach_message, list every compound lift's predicted PR target so the athlete knows exactly what to chase.
