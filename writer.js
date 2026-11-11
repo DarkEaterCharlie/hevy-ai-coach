@@ -1,5 +1,17 @@
 const fs = require("fs");
 const path = require("path");
+const { getProgressionTier } = require("./utils/exercise_tier");
+const {
+  loadWarmupProtocol,
+  buildGeneralWarmupText,
+  ensureWarmupSets,
+} = require("./utils/warmup");
+const {
+  applyCycleScaling,
+  applyCycleVolume,
+  describeCycleState,
+} = require("./utils/cycle");
+
 const templatesMap = {};
 if (fs.existsSync("./templates_db.json")) {
   JSON.parse(fs.readFileSync("./templates_db.json", "utf-8")).forEach(
@@ -12,11 +24,18 @@ if (fs.existsSync("./templates_db.json")) {
  * Transforms AI plan into Hevy-ready files.
  * Ensures: English labels, original exercise order, and superset rest logic.
  */
-async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
+async function exportPlanToHevyFiles(aiPlan, originalRoutines, cycleState) {
   console.log(
     "📂 [Module: Writer] Exporting routines to /exports (English labels)...",
   );
   const dir = "./exports";
+  const warmupProtocol = loadWarmupProtocol();
+  const generalWarmup = buildGeneralWarmupText(warmupProtocol);
+  const cycleSummary = describeCycleState(cycleState);
+
+  if (cycleSummary) {
+    console.log(`🌙 [Writer] Applying cycle autoregulation - ${cycleSummary}`);
+  }
 
   if (fs.existsSync(dir)) {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -39,6 +58,8 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
       continue;
     }
 
+    let warmupsInjected = 0;
+
     const normalizedExercises = sourceRoutine.exercises
       .map((origEx, index) => {
         const aiEx = aiWorkout.exercises.find(
@@ -52,6 +73,10 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
           return null;
         }
 
+        const templateData = templatesMap[origEx.hevy_id] || {};
+        const tier = getProgressionTier(templateData);
+        const isCardio = tier === "CARDIO_IGNORE";
+
         // --- SUPERSET REST LOGIC ---
         const nextEx = sourceRoutine.exercises[index + 1];
         let finalRest = aiEx.rest_seconds || origEx.rest_seconds || 90;
@@ -63,36 +88,46 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
           nextEx.superset_id === origEx.superset_id
         ) {
           finalRest = 0;
+        } else if (cycleState && cycleState.enabled && !isCardio) {
+          // Harder phases of the cycle get longer rest between working sets
+          finalRest += cycleState.restBonusSeconds || 0;
         }
 
-        // --- WARMUP SAFETY GUARD ---
         let currentSets = [...aiEx.sets];
-        const aiWarmupCount = currentSets.filter(
-          (s) => s.type === "warmup",
-        ).length;
-        const templateData = templatesMap[origEx.exercise_template_id];
-        if (templateData && templateData.primary_muscle_group === "cardio") {
+
+        if (isCardio) {
           console.log(
-            `🛡️ [Writer] Detekováno Kardio (${templateData.title}). Ignoruji AI a vracím tvoje nastavení!`,
+            `🛡️ [Writer] Cardio detected (${templateData.title || origEx.name}). Keeping your own template settings.`,
           );
           currentSets = origEx.raw_sets ?? currentSets;
-        }
+        } else {
+          // --- CYCLE AUTOREGULATION (system-side, never left to the AI) ---
+          const weightStep = tier === "HEAVY_COMPOUND" ? 2.5 : 1;
+          currentSets = applyCycleVolume(currentSets, cycleState);
+          currentSets = applyCycleScaling(currentSets, cycleState, {
+            step: weightStep,
+          });
 
-        if (aiWarmupCount < origEx.warmup_sets) {
-          const missingCount = origEx.warmup_sets - aiWarmupCount;
-          const firstWorkSet = currentSets.find((s) => s.type === "normal") || {
-            weight_kg: 20,
-            reps: 10,
-          };
-          const emergencyWarmups = [];
-          for (let i = 0; i < missingCount; i++) {
-            emergencyWarmups.push({
-              type: "warmup",
-              weight_kg: Math.round((firstWorkSet.weight_kg * 0.5) / 2.5) * 2.5,
-              reps: firstWorkSet.reps + 2,
-            });
+          if (cycleState && cycleState.enabled && cycleState.rpeCap) {
+            currentSets = currentSets.map((s) =>
+              s.type === "normal" && s.rpe && s.rpe > cycleState.rpeCap
+                ? { ...s, rpe: cycleState.rpeCap }
+                : s,
+            );
           }
-          currentSets = [...emergencyWarmups, ...currentSets];
+
+          // --- MANDATORY WARM-UP (ramp-up sets are forced, never optional) ---
+          const { sets: warmedSets, added } = ensureWarmupSets({
+            sets: currentSets,
+            tier,
+            templateWarmupCount: origEx.warmup_sets,
+            protocol: warmupProtocol,
+          });
+          currentSets = warmedSets;
+
+          if (added > 0) {
+            warmupsInjected += added;
+          }
         }
 
         // --- GENERATE ENGLISH TARGET NOTES ---
@@ -120,10 +155,19 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
       })
       .filter((ex) => ex !== null);
 
+    // Every routine carries the mandatory general warm-up in its notes
+    const routineNotes = [
+      generalWarmup,
+      cycleSummary ? `\n${cycleSummary}\n${cycleState.note}` : "",
+      aiPlan.coach_message ? `\n${aiPlan.coach_message}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
     const hevyFormat = {
       routine: {
         title: sourceRoutine.routine_name,
-        notes: aiPlan.coach_message || "",
+        notes: routineNotes,
         exercises: normalizedExercises,
       },
     };
@@ -131,7 +175,10 @@ async function exportPlanToHevyFiles(aiPlan, originalRoutines) {
     const filePath = path.join(dir, `routine_${sourceRoutine.routine_id}.json`);
     fs.writeFileSync(filePath, JSON.stringify(hevyFormat, null, 2), "utf-8");
     console.log(
-      `✅ [Writer] File generated: routine_${sourceRoutine.routine_id}.json`,
+      `✅ [Writer] File generated: routine_${sourceRoutine.routine_id}.json` +
+        (warmupsInjected > 0
+          ? ` (${warmupsInjected} mandatory warm-up sets injected)`
+          : ""),
     );
   }
 }

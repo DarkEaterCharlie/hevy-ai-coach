@@ -47,13 +47,31 @@ async function gatherUserProfile(rl) {
     const otherSports = await askQuestion("5️⃣ Do you do other sports? (Press Enter for none): ", rl);
     const currentPhase = await askQuestion("6️⃣ Your current training goal (e.g. Strength, Hypertrophy): ", rl);
 
+    // --- Optional menstrual cycle autoregulation ---
+    const cycleAnswer = await askQuestion("7️⃣ Do you want training scaled to your menstrual cycle? (yes/no, Enter = no): ", rl);
+    const cycleTracking = /^(yes|y|ano)$/i.test(cycleAnswer.trim()) ? "yes" : "no";
+
+    let cycleLength = 28;
+    let lastPeriodStart = "";
+    if (cycleTracking === "yes") {
+        const lengthAnswer = await askQuestion("   📅 Average cycle length in days (Enter = 28): ", rl);
+        cycleLength = Number(lengthAnswer) || 28;
+        const startAnswer = await askQuestion("   📅 First day of your last period (YYYY-MM-DD): ", rl);
+        lastPeriodStart = startAnswer.trim();
+        console.log("   ℹ️ Keep LAST_PERIOD_START up to date in the Config sheet - stale data disables the scaling.");
+    }
+
     return {
         age: Number(age) || 30,
         gender: gender.trim() || "male",
         bodyweight: Number(bodyweight) || 85,
         otherSports: otherSports.trim() || "none",
         injuries: injuries.trim() || "none",
-        currentPhase: currentPhase.trim() || "Hypertrophy"
+        currentPhase: currentPhase.trim() || "Hypertrophy",
+        cycleTracking,
+        cycleLength,
+        lastPeriodStart,
+        cyclePhaseOverride: ""
     };
 }
 
@@ -85,7 +103,7 @@ async function selectTargetFolder(apiKey, rl) {
             console.log(`  [${i + 1}] ${f.title || f.name}`);
         });
 
-        const choice = await askQuestion(`\n7️⃣ Select the folder number to use (1-${folderList.length}): `, rl);
+        const choice = await askQuestion(`\n8️⃣ Select the folder number to use (1-${folderList.length}): `, rl);
         const selected = folderList[parseInt(choice) - 1];
 
         if (selected) {

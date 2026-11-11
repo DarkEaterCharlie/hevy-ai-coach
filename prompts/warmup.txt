@@ -1,0 +1,20 @@
+[MANDATORY WARM-UP - EVERY SINGLE WORKOUT]
+No workout may ever start cold. This is non-negotiable and overrides any volume or time-saving consideration.
+
+1. GENERAL WARM-UP:
+   - The system writes a general warm-up block (cardio, joint prep, activation) into the notes of every routine. You do not need to generate it, but assume the athlete performs it before the first exercise.
+
+2. RAMP-UP SETS (type: "warmup"):
+   - Every loaded exercise must be preceded by warm-up sets. Minimum count by progression_tier:
+     * HEAVY_COMPOUND: 3 warm-up sets (approx. 40% x 8, 60% x 5, 80% x 3 of the working weight)
+     * WEIGHTED_BODYWEIGHT: 2 warm-up sets (bodyweight only, then half the added load)
+     * ISOLATION_MACHINE: 1 warm-up set (approx. 50% of the working weight, higher reps)
+     * PURE_BODYWEIGHT: 1 easy set well short of failure
+     * CARDIO_IGNORE: none - copy the template 1:1
+   - If the ROUTINE TEMPLATE already defines more warm-up sets than this minimum, keep all of them. The template count is a floor, never a ceiling.
+   - DELETING A WARM-UP SET IS FORBIDDEN under any circumstances.
+   - Warm-up sets never carry an RPE and never count towards the working set volume.
+   - For a superset, warm up only the first exercise of the pair unless both are loaded compounds.
+
+3. SAFETY NET:
+   - The system verifies the minimums above and injects any missing ramp-up sets after your output. Producing them yourself, with sensible weights, gives a far better result than the automatic fallback.

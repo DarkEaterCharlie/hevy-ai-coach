@@ -76,6 +76,22 @@ async function generateTrainingPlan(data) {
     },
   });
 
+  const cycle = data.cycleState;
+  const cycleBlock =
+    cycle && cycle.enabled
+      ? `
+        [CYCLE STATUS]
+        - Phase: ${cycle.label} (${cycle.phase})
+        - Position: ${cycle.manualOverride ? "set manually by the athlete" : `day ${cycle.cycleDay} of ${cycle.cycleLength}`}
+        - Load multiplier applied by the system AFTER your output: ${cycle.loadMultiplier}x (do NOT apply it yourself)
+        - Maximum allowed RPE this phase: ${cycle.rpeCap}
+        - Accessory volume guidance: ${Math.round(cycle.volumeMultiplier * 100)}% of normal
+        - Coach guidance: ${cycle.note}
+
+        ${loadPrompt("cycle.txt")}
+`
+      : "";
+
   const prompt = `
         ${loadPrompt("role.txt")}
 
@@ -91,7 +107,10 @@ async function generateTrainingPlan(data) {
         - Injuries / Limitations: ${data.injuries}
         - Current focus: ${data.currentPhase}
 
+        ${cycleBlock}
+
         ${loadPrompt("safety.txt")}
+        ${loadPrompt("warmup.txt")}
         ${loadPrompt("components.txt")}
         ${loadPrompt("progression.txt")}
 

@@ -12,6 +12,8 @@ const { generateTrainingPlan } = require("./services/aiService");
 const { exportPlanToHevyFiles } = require("./writer");
 const { syncExportsToHevy } = require("./uploader");
 const { sync1RMToSheets } = require("./utils/sync_1rm");
+const { getCycleState, describeCycleState } = require("./utils/cycle");
+const { getProgressionTier } = require("./utils/exercise_tier");
 
 async function runModularCoach() {
   console.log("🤖 START: Initializing Hybrid AI Coach (v5 Powerbuilding)...\n");
@@ -58,6 +60,25 @@ async function runModularCoach() {
       smartCatalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
     }
 
+    // --- MENSTRUAL CYCLE AUTOREGULATION ---
+    const cycleState = getCycleState({
+      tracking: sheetsData.cycleTracking,
+      lastPeriodStart: sheetsData.lastPeriodStart,
+      cycleLength: sheetsData.cycleLength,
+      phaseOverride: sheetsData.cyclePhaseOverride,
+    });
+
+    if (cycleState.enabled) {
+      console.log(`🌙 [Module: Cycle] ${describeCycleState(cycleState)}`);
+      console.log(`   ${cycleState.note}`);
+    } else if (
+      /^(yes|y|true|1|ano)$/i.test(String(sheetsData.cycleTracking).trim())
+    ) {
+      console.log(
+        `⚠️ [Module: Cycle] Tracking is on but inactive: ${cycleState.reason}`,
+      );
+    }
+
     console.log("📜 [Module: Hevy] Analyzing recent workout history...");
     const rawHistory = await getLastWorkouts(process.env.HEVY_API_KEY, 10);
 
@@ -102,32 +123,8 @@ async function runModularCoach() {
       exercises: routine.exercises.map((exercise) => {
         const template = templatesMap[exercise.hevy_id] || {};
 
-        // --- AI CATEGORIZATION LOGIC ---
-        let tier = "ISOLATION_MACHINE"; // Default for machines, dumbbells, and CORE
-
-        if (template.primary_muscle_group === "cardio") {
-          tier = "CARDIO_IGNORE"; // AI will ignore this
-        } else if (template.type === "bodyweight_weighted") {
-          tier = "WEIGHTED_BODYWEIGHT";
-        } else if (
-          template.type === "reps_only" &&
-          (template.equipment === "none" || template.equipment === "suspension")
-        ) {
-          tier = "PURE_BODYWEIGHT";
-        } else if (
-          template.equipment === "barbell" &&
-          [
-            "chest",
-            "shoulders",
-            "quadriceps",
-            "glutes",
-            "hamstrings",
-            "upper_back",
-            "lats",
-          ].includes(template.primary_muscle_group)
-        ) {
-          tier = "HEAVY_COMPOUND";
-        }
+        // --- AI CATEGORIZATION LOGIC (shared with the writer) ---
+        const tier = getProgressionTier(template);
 
         return {
           name: exercise.name,
@@ -156,10 +153,11 @@ async function runModularCoach() {
       otherSports: sheetsData.otherSports,
       injuries: sheetsData.injuries,
       smartCatalog: smartCatalog,
+      cycleState: cycleState,
     });
 
     // Export plan to Hevy-compatible files and print summary
-    await exportPlanToHevyFiles(plan, routines);
+    await exportPlanToHevyFiles(plan, routines, cycleState);
     printPlanLocally(plan);
 
     // Interactive approval and upload
@@ -206,7 +204,10 @@ function printPlanLocally(plan) {
   }
 
   console.log(`\n🏆 AI COACH PLAN PROPOSAL:`);
-  console.log(`🗣️ ${plan.coach_message}\n`);
+  console.log(`🗣️ ${plan.coach_message}`);
+  console.log(
+    `ℹ️ Warmup column shows the AI's own sets - the writer tops them up to the mandatory minimum and the generated files in /exports are the source of truth.\n`,
+  );
 
   plan.weekly_plan.forEach((workout) => {
     console.log(`--- 🏋️ ${workout.workout_name} ---`);

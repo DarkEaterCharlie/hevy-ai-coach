@@ -1,0 +1,49 @@
+{
+  "_comment": "Mandatory warm-up. The general block is written into every routine's notes; the per-tier ramp-up sets are force-injected by writer.js so no workout can ever start cold.",
+  "general_warmup": {
+    "title": "MANDATORY WARM-UP (8-10 min) - do not skip",
+    "steps": [
+      "1) 3-5 min easy cardio (bike / row / fast walk) until you break a light sweat",
+      "2) Joint prep: 10x shoulder circles, 10x hip circles, 10x ankle rocks, 10x cat-cow",
+      "3) Activation: 15x band pull-apart, 15x glute bridge, 10x dead bug per side",
+      "4) Ramp-up sets on the loaded lifts are part of the plan - they are marked as warm-up sets, never skip them"
+    ]
+  },
+  "tiers": {
+    "HEAVY_COMPOUND": {
+      "min_sets": 3,
+      "percentages": [0.4, 0.6, 0.8],
+      "reps": [8, 5, 3],
+      "weight_step": 2.5,
+      "min_weight_kg": 20
+    },
+    "WEIGHTED_BODYWEIGHT": {
+      "min_sets": 2,
+      "percentages": [0, 0.5],
+      "reps": [8, 5],
+      "weight_step": 1.25,
+      "min_weight_kg": 0
+    },
+    "ISOLATION_MACHINE": {
+      "min_sets": 1,
+      "percentages": [0.5],
+      "reps": [12],
+      "weight_step": 1,
+      "min_weight_kg": 0
+    },
+    "PURE_BODYWEIGHT": {
+      "min_sets": 1,
+      "percentages": [0],
+      "reps": [8],
+      "weight_step": 1,
+      "min_weight_kg": 0
+    },
+    "CARDIO_IGNORE": {
+      "min_sets": 0,
+      "percentages": [],
+      "reps": [],
+      "weight_step": 1,
+      "min_weight_kg": 0
+    }
+  }
+}

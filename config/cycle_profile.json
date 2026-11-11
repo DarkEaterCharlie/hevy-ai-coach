@@ -1,0 +1,50 @@
+{
+  "_comment": "Menstrual-cycle aware autoregulation. Multipliers are applied by the system (utils/cycle.js + writer.js), NOT by the AI. Edit freely - every athlete responds differently.",
+  "default_cycle_length": 28,
+  "max_stale_multiplier": 2,
+  "luteal_phase_days": 14,
+  "menstrual_days": 5,
+  "ovulatory_window_days": 2,
+  "phases": {
+    "menstrual": {
+      "label": "Menstruation (day 1-5)",
+      "load_multiplier": 0.9,
+      "volume_multiplier": 0.85,
+      "rpe_cap": 8,
+      "rest_bonus_seconds": 15,
+      "note": "Bleeding phase. Keep the movement patterns, shave the load ~10%, stop 2 reps short. Skip max-effort attempts; light training usually reduces cramps."
+    },
+    "follicular": {
+      "label": "Follicular (rising estrogen)",
+      "load_multiplier": 1.0,
+      "volume_multiplier": 1.0,
+      "rpe_cap": 9,
+      "rest_bonus_seconds": 0,
+      "note": "Best recovery window of the cycle. Push linear progression hard here - this is where weight increases should land."
+    },
+    "ovulatory": {
+      "label": "Ovulation (peak strength, joint laxity)",
+      "load_multiplier": 1.02,
+      "volume_multiplier": 1.0,
+      "rpe_cap": 9.5,
+      "rest_bonus_seconds": 0,
+      "note": "Peak force output - good window for PR attempts on barbell lifts. Ligament laxity is highest: strict technique, no sloppy depth, no explosive/plyo novelty."
+    },
+    "early_luteal": {
+      "label": "Early luteal",
+      "load_multiplier": 1.0,
+      "volume_multiplier": 1.0,
+      "rpe_cap": 9,
+      "rest_bonus_seconds": 0,
+      "note": "Still solid capacity. Hold the progression, expect a slightly higher heart rate and perceived effort at the same weight."
+    },
+    "late_luteal": {
+      "label": "Late luteal / PMS",
+      "load_multiplier": 0.93,
+      "volume_multiplier": 0.85,
+      "rpe_cap": 8,
+      "rest_bonus_seconds": 15,
+      "note": "PMS window: higher core temperature, worse recovery, lower motivation. Hold or slightly reduce the load, cut accessory volume, extend rest. Maintenance is a win here."
+    }
+  }
+}

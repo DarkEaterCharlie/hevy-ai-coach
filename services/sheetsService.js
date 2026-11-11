@@ -17,6 +17,10 @@ async function getSheetsData(spreadsheetId) {
     let gender = "male";
     let otherSports = "none";
     let injuries = "none";
+    let cycleTracking = "no";
+    let cycleLength = 28;
+    let lastPeriodStart = "";
+    let cyclePhaseOverride = "";
 
     if (configData.data.values) {
         configData.data.values.forEach(row => {
@@ -30,6 +34,11 @@ async function getSheetsData(spreadsheetId) {
             if (row[0] === 'GENDER') gender = val || "male";
             if (row[0] === 'OTHER_SPORTS') otherSports = val || "none";
             if (row[0] === 'INJURIES') injuries = val || "none";
+            // --- Menstrual cycle autoregulation (optional) ---
+            if (row[0] === 'CYCLE_TRACKING') cycleTracking = val || "no";
+            if (row[0] === 'CYCLE_LENGTH') cycleLength = parseInt(val) || 28;
+            if (row[0] === 'LAST_PERIOD_START') lastPeriodStart = val;
+            if (row[0] === 'CYCLE_PHASE_OVERRIDE') cyclePhaseOverride = val;
         });
     }
 
@@ -62,7 +71,11 @@ async function getSheetsData(spreadsheetId) {
         age,
         gender,
         otherSports,
-        injuries
+        injuries,
+        cycleTracking,
+        cycleLength,
+        lastPeriodStart,
+        cyclePhaseOverride
     };
 }
 
